@@ -192,6 +192,7 @@ extension MapView: UISearchBarDelegate {
         searchSuggestion.reloadData()
     }
     
+    // function called when teh search button on the keyboard is clicked.
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         view.endEditing(true)
         if (results == nil || results!.count == 0) {
