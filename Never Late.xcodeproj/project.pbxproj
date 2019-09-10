@@ -11,9 +11,9 @@
 		A60348E322DF978000AE932F /* NeverLateEntryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60348E222DF978000AE932F /* NeverLateEntryViewController.swift */; };
 		A60348E922DF978000AE932F /* Never_Late.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = A60348E722DF978000AE932F /* Never_Late.xcdatamodeld */; };
 		A60348EB22DF978100AE932F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A60348EA22DF978100AE932F /* Assets.xcassets */; };
-		A60348F822DFD84B00AE932F /* AddNewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60348F722DFD84B00AE932F /* AddNewViewController.swift */; };
 		A60348FC22E0001A00AE932F /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60348FB22E0001A00AE932F /* Event.swift */; };
 		A62DC6A92326F7F7008C78F6 /* EventManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62DC6A82326F7F7008C78F6 /* EventManager.swift */; };
+		A62DC6AC23286A5C008C78F6 /* AddNewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62DC6AB23286A5C008C78F6 /* AddNewViewController.swift */; };
 		A68E607322F61069003ADB6F /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68E607222F61069003ADB6F /* MapView.swift */; };
 		A6A689F522F75876004D227F /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A689F422F75876004D227F /* AppCoordinator.swift */; };
 /* End PBXBuildFile section */
@@ -25,9 +25,9 @@
 		A60348E822DF978000AE932F /* Never_Late.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Never_Late.xcdatamodel; sourceTree = "<group>"; };
 		A60348EA22DF978100AE932F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A60348EF22DF978100AE932F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A60348F722DFD84B00AE932F /* AddNewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AddNewViewController.swift; path = ../AddNewViewController.swift; sourceTree = "<group>"; };
 		A60348FB22E0001A00AE932F /* Event.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
 		A62DC6A82326F7F7008C78F6 /* EventManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventManager.swift; sourceTree = "<group>"; };
+		A62DC6AB23286A5C008C78F6 /* AddNewViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddNewViewController.swift; sourceTree = "<group>"; };
 		A68E607222F61069003ADB6F /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		A6A689F422F75876004D227F /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -62,11 +62,9 @@
 		A60348DF22DF978000AE932F /* Never Late */ = {
 			isa = PBXGroup;
 			children = (
+				A62DC6AD23286A8C008C78F6 /* ViewControllers */,
 				A62DC6AA23270380008C78F6 /* DataModel */,
 				A6A689F322F75819004D227F /* Coordinator */,
-				A60348F722DFD84B00AE932F /* AddNewViewController.swift */,
-				A60348E222DF978000AE932F /* NeverLateEntryViewController.swift */,
-				A68E607222F61069003ADB6F /* MapView.swift */,
 				A60348E022DF978000AE932F /* AppDelegate.swift */,
 				A60348EA22DF978100AE932F /* Assets.xcassets */,
 				A60348EF22DF978100AE932F /* Info.plist */,
@@ -82,6 +80,16 @@
 				A60348FB22E0001A00AE932F /* Event.swift */,
 			);
 			path = DataModel;
+			sourceTree = "<group>";
+		};
+		A62DC6AD23286A8C008C78F6 /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				A62DC6AB23286A5C008C78F6 /* AddNewViewController.swift */,
+				A60348E222DF978000AE932F /* NeverLateEntryViewController.swift */,
+				A68E607222F61069003ADB6F /* MapView.swift */,
+			);
+			path = ViewControllers;
 			sourceTree = "<group>";
 		};
 		A6A689F322F75819004D227F /* Coordinator */ = {
@@ -162,13 +170,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				A68E607322F61069003ADB6F /* MapView.swift in Sources */,
+				A62DC6AC23286A5C008C78F6 /* AddNewViewController.swift in Sources */,
 				A60348E922DF978000AE932F /* Never_Late.xcdatamodeld in Sources */,
 				A62DC6A92326F7F7008C78F6 /* EventManager.swift in Sources */,
 				A60348E322DF978000AE932F /* NeverLateEntryViewController.swift in Sources */,
 				A6A689F522F75876004D227F /* AppCoordinator.swift in Sources */,
 				A60348E122DF978000AE932F /* AppDelegate.swift in Sources */,
 				A60348FC22E0001A00AE932F /* Event.swift in Sources */,
-				A60348F822DFD84B00AE932F /* AddNewViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
