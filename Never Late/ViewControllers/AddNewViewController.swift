@@ -9,7 +9,6 @@
 import Foundation
 import UIKit
 import MapKit
-
 protocol EventReciever {
     func recieveEvent(event: Event)
 }

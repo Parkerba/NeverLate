@@ -8,6 +8,7 @@
 
 import UIKit
 import MapKit
+import UserNotifications
 
 class NeverLateEntryViewController: UIViewController {
     
@@ -69,11 +70,53 @@ class NeverLateEntryViewController: UIViewController {
         self.loadEvents()
         setUpUI()
         
+        // ask for permission
+        let notificationCenter = UNUserNotificationCenter.current()
         
+        notificationCenter.requestAuthorization(options: [.alert,.sound], completionHandler: {(granted, error) in
+            
+            }
+        )
         
+        // create notification content
+//        let content = UNMutableNotificationContent()
+//        content.title = "Time to Leave for EVENT NAME"
+//        content.body = "You need to be at LOCATION NAME by EVENT TIME"
+//
+//        // create notification trigger
+//        let currentDate = Date()
+//
+//        let dateComponents = Calendar.current.dateComponents([.year,.month, .hour, .minute, .second], from: currentDate)
+//
+//        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
+//
+//        // create the request
+//        let uuidString = UUID().uuidString
+//        let request = UNNotificationRequest(identifier: uuidString, content: content, trigger: trigger)
+//
+//        // register with notification center
+//        notificationCenter.add(request) { (error) in
+//
+//        }
         // Do any additional setup after loading the view.
     }
     
+    
+    func setUpRequest(event: Event) {
+        let content = UNMutableNotificationContent()
+        content.title = "Time to Leave for \(event.title)"
+        content.body = "You need to be at \(event.locationName)"
+        
+        let dateComponents = Calendar.current.dateComponents([.year, .month, .hour, .minute, .second], from: event.eventDate)
+        
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
+        
+        let request = UNNotificationRequest(identifier: event.eventIdentifier.uuidString, content: content, trigger: trigger)
+
+        UNUserNotificationCenter.current().add(request) { (error) in
+            
+        }
+    }
     
     // sets up the Constraints to all the subviews in the view controller
     func setUpUI() {
@@ -130,6 +173,7 @@ class NeverLateEntryViewController: UIViewController {
         event.saveEvent()
         events.append(event)
         events.sort(by: { $0.eventDate < $1.eventDate})
+        setUpRequest(event: event)
     }
 
 }
@@ -161,6 +205,7 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
         
         if editingStyle == .delete {
             events[indexPath.row].deleteEvent()
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [events[indexPath.row].eventIdentifier.uuidString])
             self.events.remove(at: indexPath.row)
             tableView.beginUpdates()
             tableView.deleteRows(at: [indexPath], with: .automatic)
