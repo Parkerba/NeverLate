@@ -10,12 +10,37 @@ import UIKit
 import MapKit
 import UserNotifications
 
-class NeverLateEntryViewController: UIViewController {
+class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDelegate {
     
+    // MARK: Passing/Recieving Data --------------------------------------------------------------------------------
     var addNewEntry: (()->Void)?
+    var updateEvent: ((Event)->Void)?
     
-    let buttonColor = #colorLiteral(red: 0.6823529412, green: 0.7960784314, blue: 0.8705882353, alpha: 0.6009203767) //hex: AECBDE
+    // recieves the event sent from the addNewViewController
+    func addEvent(event: Event) {
+        event.saveEvent()
+        events.append(event)
+        events.sort(by: { $0.eventDate < $1.eventDate})
+        eventTable.reloadData()
+        if (event.locationName == nil)  {
+            AppCoordinator.addNotification(event: event)
+        }
+        else  {
+            addNotificationObservers()
+        }
+    }
+
+    // MARK: Properties --------------------------------------------------------------------------------
+    let buttonColor = #colorLiteral(red: 0.9851665668, green: 0.999414705, blue: 1, alpha: 0.1950181935) //hex: BEB490
     let mainBackgroundColor = #colorLiteral(red: 0.9338286519, green: 0.9739060998, blue: 0.9988136888, alpha: 1) //hex: F0F8FE
+    
+    let backgroundImageView = UIImageView(image: #imageLiteral(resourceName: "geometric"))
+
+    func setUpImageView() {
+        backgroundImageView.contentMode = .scaleAspectFill
+        backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
+    }
+    
     
     // Top label denoting the name of the app
     let neverLateLabel : UILabel = {
@@ -48,78 +73,59 @@ class NeverLateEntryViewController: UIViewController {
         return button
     }()
     
+    let eventTableLabel : UILabel = {
+        let label = UILabel()
+        label.text = "Upcoming Events:"
+        label.textColor = UIColor.gray
+        label.adjustsFontSizeToFitWidth = true
+        
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     // Table view for displaying the event information
-    let cellID = "eventCell"
     let eventTable : UITableView = {
         let tableView = UITableView()
         tableView.allowsSelection = true
-        tableView.layer.cornerRadius = 15
         tableView.backgroundColor = .clear
+        tableView.register(EventSummaryCellTableViewCell.self, forCellReuseIdentifier: "eventCell")
+        tableView.rowHeight = 90
         
         tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
     }()
     
+    // MARK: LifeCycle --------------------------------------------------------------------------------
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = mainBackgroundColor
+        if (self.traitCollection.userInterfaceStyle == .dark) {
+            backgroundImageView.image = #imageLiteral(resourceName: "geometricDarkMode")
+        }
+        setUpImageView()
+        addSubviews()
+        self.loadEvents()
+        setUpUI()
+        // ask for permission
+        AppCoordinator.requestNotificationPermission(requestView: self)
+    }
+    
+    private func addSubviews() {
+        view.addSubview(backgroundImageView)
         view.addSubview(neverLateLabel)
         view.addSubview(settingsButton)
         view.addSubview(addButton)
+        view.addSubview(eventTableLabel)
         view.addSubview(eventTable)
-        self.loadEvents()
-        setUpUI()
-        
-        // ask for permission
-        let notificationCenter = UNUserNotificationCenter.current()
-        
-        notificationCenter.requestAuthorization(options: [.alert,.sound], completionHandler: {(granted, error) in
-            
-            }
-        )
-        
-        // create notification content
-//        let content = UNMutableNotificationContent()
-//        content.title = "Time to Leave for EVENT NAME"
-//        content.body = "You need to be at LOCATION NAME by EVENT TIME"
-//
-//        // create notification trigger
-//        let currentDate = Date()
-//
-//        let dateComponents = Calendar.current.dateComponents([.year,.month, .hour, .minute, .second], from: currentDate)
-//
-//        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
-//
-//        // create the request
-//        let uuidString = UUID().uuidString
-//        let request = UNNotificationRequest(identifier: uuidString, content: content, trigger: trigger)
-//
-//        // register with notification center
-//        notificationCenter.add(request) { (error) in
-//
-//        }
-        // Do any additional setup after loading the view.
-    }
-    
-    
-    func setUpRequest(event: Event) {
-        let content = UNMutableNotificationContent()
-        content.title = "Time to Leave for \(event.title)"
-        content.body = "You need to be at \(event.locationName)"
-        
-        let dateComponents = Calendar.current.dateComponents([.year, .month, .hour, .minute, .second], from: event.eventDate)
-        
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
-        
-        let request = UNNotificationRequest(identifier: event.eventIdentifier.uuidString, content: content, trigger: trigger)
-
-        UNUserNotificationCenter.current().add(request) { (error) in
-            
-        }
     }
     
     // sets up the Constraints to all the subviews in the view controller
     func setUpUI() {
+        backgroundImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        backgroundImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        backgroundImageView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        backgroundImageView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
+
         
         // app name label constraints
         neverLateLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 10).isActive = true
@@ -139,20 +145,19 @@ class NeverLateEntryViewController: UIViewController {
         addButton.heightAnchor.constraint(equalTo: settingsButton.heightAnchor).isActive = true
         addButton.backgroundColor = buttonColor
         
+        eventTableLabel.topAnchor.constraint(equalTo: addButton.bottomAnchor, constant: 10).isActive = true
+        eventTableLabel.leadingAnchor.constraint(equalTo: eventTable.leadingAnchor).isActive = true
+        
         // tableView contraints
-        eventTable.topAnchor.constraint(equalTo: addButton.bottomAnchor, constant: 20).isActive = true
+        eventTable.topAnchor.constraint(equalTo: eventTableLabel.bottomAnchor).isActive = true
         eventTable.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: view.frame.width/50).isActive = true
         eventTable.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -10).isActive = true
         eventTable.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -view.frame.width/50).isActive = true
-        eventTable.register(UITableViewCell.self, forCellReuseIdentifier: cellID)
         eventTable.delegate = self
         eventTable.dataSource = self
     }
     
-    
-    
-    
-    
+    // MARK: Actions  --------------------------------------------------------------------------------
     @objc func onSettingsButton() {
         print("Moving to the settings view")
     }
@@ -168,54 +173,87 @@ class NeverLateEntryViewController: UIViewController {
         events.sort(by: { $0.eventDate < $1.eventDate})
     }
     
-    // recieves the event sent from the addNewViewController
-    func addEvent(event: Event) {
-        event.saveEvent()
-        events.append(event)
-        events.sort(by: { $0.eventDate < $1.eventDate})
-        setUpRequest(event: event)
-    }
 
 }
 
+// MARK: google request UI response --------------------------------------------------------------------------------
+
+extension NeverLateEntryViewController {
+    @objc func reloadTableData() {
+        DispatchQueue.main.async {
+            self.loadEvents()
+            self.eventTable.reloadData()
+            self.removeNotificationObservers()
+        }
+    }
+    
+    @objc func invalidRequestPresentError() {
+        let invalidRequestAlert = UIAlertController(title: "There is not enough time to reach your destination", message: "", preferredStyle: .alert)
+        invalidRequestAlert.addAction(UIAlertAction(title: "Dismiss", style: .destructive, handler: nil))
+        self.present(invalidRequestAlert, animated: true)
+        removeNotificationObservers()
+    }
+    
+    @objc func networkErrorPresentError() {
+        let invalidRequestAlert = UIAlertController(title: "There has been a network error", message: "", preferredStyle: .alert)
+        invalidRequestAlert.addAction(UIAlertAction(title: "Dismiss", style: .destructive, handler: nil))
+        self.present(invalidRequestAlert, animated: true)
+        removeNotificationObservers()
+    }
+    
+    func addNotificationObservers() {
+        let reloadEvents = Notification.Name(rawValue: "reloadEvents")
+        NotificationCenter.default.addObserver(self, selector: #selector(reloadTableData), name: reloadEvents, object: nil)
+        
+        let invalidRequest = Notification.Name(rawValue: "invalidRequest")
+        NotificationCenter.default.addObserver(self, selector: #selector(invalidRequestPresentError), name: invalidRequest, object: nil)
+        
+        let networkError = Notification.Name(rawValue: "networkError")
+        NotificationCenter.default.addObserver(self, selector: #selector(networkErrorPresentError), name: networkError, object: nil)
+    }
+    
+    func removeNotificationObservers() {
+        NotificationCenter.default.removeObserver(self, name: Notification.Name("reloadEvents"), object: nil)
+        NotificationCenter.default.removeObserver(self, name: Notification.Name("invalidRequest"), object: nil)
+        NotificationCenter.default.removeObserver(self, name: Notification.Name("networkError"), object: nil)
+    }
+}
+
+
+
+
+// MARK: TableView Functionality --------------------------------------------------------------------------------
 extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return events.count
     }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellID, for: indexPath)
-        var eventLocation: String = ""
-        if (events[indexPath.row].locationName != nil) {
-            eventLocation = "Location: \(events[indexPath.row].locationName!)\n"
-        }
-        let eventName: String = "\(events[indexPath.row].title) \n"
-        cell.textLabel?.text = "\(eventName)\(eventLocation)\(events[indexPath.row].currentTime())"
-        cell.textLabel?.numberOfLines = 0
-        cell.backgroundColor = .clear
+        let cell = tableView.dequeueReusableCell(withIdentifier: "eventCell", for: indexPath) as! EventSummaryCellTableViewCell
+        cell.set(passedEvent: events[indexPath.row])
+        cell.selectionStyle = .none
         return cell
     }
     
-    // Modfiying the ability to edit the event table
+    // Gives ability to edit the event table
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
     }
     
-    // Handling deleting Events
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        AppCoordinator.openAppleMaps(event: events[indexPath.row])
+    }
+    
+    // Handling deleting Events and cooresponding notifications
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         
-        if editingStyle == .delete {
+        if (editingStyle == .delete) {
             events[indexPath.row].deleteEvent()
-            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [events[indexPath.row].eventIdentifier.uuidString])
-            self.events.remove(at: indexPath.row)
+            AppCoordinator.removeEventNotifications(event: events[indexPath.row])
+            events.remove(at: indexPath.row)
             tableView.beginUpdates()
             tableView.deleteRows(at: [indexPath], with: .automatic)
             tableView.endUpdates()
         }
-        
-        
     }
-    
-
 }
-
-

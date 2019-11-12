@@ -17,19 +17,42 @@ struct Event: Codable {
     init (datePicked: Date, eventName: String, eventLocation: MKPlacemark?, EventDescription: String ) {
         eventDate = datePicked
         locationName = eventLocation?.name
-        locationLatitude = eventLocation?.coordinate.latitude
-        locationLongitude = eventLocation?.coordinate.longitude
         title = eventName
         eventDescription = EventDescription
+        
+        locationLatitude = eventLocation?.coordinate.latitude
+        locationLongitude = eventLocation?.coordinate.longitude
+       
+        eventIdentifier = UUID()
+    }
+    
+    init (datePicked: Date, eventName: String, eventLocation: MKPlacemark?, currentLocation: CLLocationCoordinate2D?, EventDescription: String ) {
+        eventDate = datePicked
+        locationName = eventLocation?.name
+        title = eventName
+        eventDescription = EventDescription
+        
+        currentLatitude = currentLocation?.latitude
+        currentLongitude = currentLocation?.longitude
+        
+        locationLatitude = eventLocation?.coordinate.latitude
+        locationLongitude = eventLocation?.coordinate.longitude
+       
+        
         eventIdentifier = UUID()
     }
 
     
     var title: String
     
+    var currentLatitude: Double?
+    var currentLongitude: Double?
+    
     var locationLatitude: Double?
     var locationLongitude: Double?
     var locationName: String?
+    var driveTime: Int?
+    var departureTime: Date?
     // This is the date of the event chosen by the user
     var eventDate: Date
     var eventDescription: String
@@ -76,5 +99,13 @@ struct Event: Codable {
             let minutes  = Int(diff/60)%60
             return "Days:\(days) Hours:\(hours) Min: \(minutes)  "
         }
+    }
+    
+    mutating func setDriveTime(driveTime: Int) {
+        self.driveTime = driveTime
+    }
+    
+    mutating func setDepartureTime(departureTime: Date) {
+        self.departureTime = departureTime
     }
 }

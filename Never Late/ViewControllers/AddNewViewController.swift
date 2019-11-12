@@ -6,27 +6,35 @@
 //  Copyright © 2019 Parker Buhler Amundsen. All rights reserved.
 //
 
-import Foundation
 import UIKit
 import MapKit
+import CoreLocation
+
+
 protocol EventReciever {
     func recieveEvent(event: Event)
 }
-class AddNewViewController: UIViewController, UITextFieldDelegate, locationReciever {
-    func recieveEventLocation(placemark: MKPlacemark?) {
-        self.location = placemark
-        if let local = placemark {
-            self.addLocationButton.setTitle(local.name, for: .normal)
-        }
+
+
+class AddNewViewController: UIViewController, UITextFieldDelegate {
+    
+    deinit {
+        print("Memory was released in AddNewViewController. No retain cycles")
     }
     
+    // MARK: Properties --------------------------------------------------------------------------------
     var delegate: EventReciever?
     
-    var location: MKPlacemark?
+    var destinationLocation: MKPlacemark?
+    
+    var startingLocation: CLLocationCoordinate2D?
+    
+    var locationManager: CLLocationManager?
     
     // colors used
+    
     let mainBackgroundColor = #colorLiteral(red: 0.9411764706, green: 0.9725490196, blue: 0.9960784314, alpha: 1)
-    let buttonColor = #colorLiteral(red: 0.6823529412, green: 0.7960784314, blue: 0.8705882353, alpha: 1)
+    let buttonColor = #colorLiteral(red: 0.7450980392, green: 0.7058823529, blue: 0.5647058824, alpha: 1) //BEB490 other complementary colors: E3DCC1,FFFBEE,746943
     
     // UILabel at the top of the view
     let neverLateLabel : UILabel = {
@@ -37,6 +45,17 @@ class AddNewViewController: UIViewController, UITextFieldDelegate, locationRecie
         
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
+    }()
+    
+    let backButton : UIButton = {
+        let button = UIButton()
+        button.setImage(#imageLiteral(resourceName: "backArrow"), for: .normal)
+        button.imageView?.contentMode = .scaleAspectFill
+        button.backgroundColor = .clear
+        button.addTarget(self, action: #selector(onBackButton), for: .touchUpInside)
+        
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
     }()
     
     let eventTitleTextField : UITextField = {
@@ -52,6 +71,7 @@ class AddNewViewController: UIViewController, UITextFieldDelegate, locationRecie
     let dividerView : UIView = {
         let retView = UIView()
         retView.backgroundColor = .lightGray
+        
         retView.translatesAutoresizingMaskIntoConstraints = false
         return retView
     }()
@@ -60,6 +80,7 @@ class AddNewViewController: UIViewController, UITextFieldDelegate, locationRecie
     let secondDividerView : UIView = {
         let retView = UIView()
         retView.backgroundColor = .lightGray
+        
         retView.translatesAutoresizingMaskIntoConstraints = false
         return retView
     }()
@@ -77,9 +98,11 @@ class AddNewViewController: UIViewController, UITextFieldDelegate, locationRecie
         let button = UIButton()
         button.setTitle("Add Location", for: .normal)
         button.addTarget(self, action: #selector(onSetLocationButton) , for: .touchUpInside)
-        button.layer.cornerRadius = 15
+        button.layer.cornerRadius = 10
         button.titleLabel?.font = UIFont(name: "Copperplate-Bold", size: 25)!
-        button.titleLabel?.numberOfLines = 0
+        button.titleLabel?.numberOfLines = 2
+        button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+        button.titleLabel?.adjustsFontSizeToFitWidth = true
         
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -89,74 +112,91 @@ class AddNewViewController: UIViewController, UITextFieldDelegate, locationRecie
         let datePickerView = UIDatePicker()
         datePickerView.minimumDate = Date()
         datePickerView.backgroundColor = .clear
+        
         datePickerView.translatesAutoresizingMaskIntoConstraints = false
         return datePickerView
-    }()
-    
-    let containerView : UIView = {
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = .clear
-        return view
     }()
     
     let doneButton: UIButton = {
         let button = UIButton()
         button.setTitle("Done", for: .normal)
         button.titleLabel?.font = UIFont(name: "Copperplate-Bold", size: 25)!
-        button.layer.cornerRadius = 15
+        button.layer.cornerRadius = 10
         button.addTarget(self, action: #selector(onDoneButton), for: .touchUpInside)
         
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
-    let isRepeating: UISwitch = {
-        let repeatingSwitch = UISwitch()
-        repeatingSwitch.isOn = false
-        repeatingSwitch.translatesAutoresizingMaskIntoConstraints = false
-    
-        return repeatingSwitch
+    let reminderTimePicker : UIStackView =  {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = -20
+        stack.distribution = .fillEqually
+        
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
     }()
     
-    let isRepeatingLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Repeating"
-        label.font = UIFont(name: "Copperplate-Bold", size: 15)!
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
+    let hourButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("1 hour", for: .normal)
+        button.backgroundColor = .lightGray
+        button.addTarget(self, action: #selector(notificationModifierPressed), for: .touchUpInside)
+        button.layer.cornerRadius = 10
+        
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
     }()
     
+    let halfHourButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("30 min", for: .normal)
+        button.backgroundColor = .lightGray
+        button.addTarget(self, action: #selector(notificationModifierPressed), for: .touchUpInside)
+        button.layer.cornerRadius = 10
+        
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    let quarterHourButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("15 min", for: .normal)
+        button.backgroundColor = .lightGray
+        button.addTarget(self, action: #selector(notificationModifierPressed), for: .touchUpInside)
+        button.layer.cornerRadius = 10
+
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    
+    
+    // MARK: LifeCycle --------------------------------------------------------------------------------
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = mainBackgroundColor
-        view.addSubview(containerView)
+        view.backgroundColor = (self.traitCollection.userInterfaceStyle == .dark) ? .black:mainBackgroundColor
+        addSubviews()
+        setUpUI()
+        self.navigationController?.interactivePopGestureRecognizer?.delegate = nil
+        self.eventTitleTextField.delegate = self
+        self.eventDescriptionTextField.delegate = self
+    }
+    
+    private func addSubviews() {
+        view.addSubview(backButton)
         view.addSubview(doneButton)
         view.addSubview(datePicker)
-        view.addSubview(isRepeating)
-        view.addSubview(isRepeatingLabel)
         view.addSubview(neverLateLabel)
         view.addSubview(dividerView)
         view.addSubview(secondDividerView)
         view.addSubview(eventTitleTextField)
         view.addSubview(eventDescriptionTextField)
         view.addSubview(addLocationButton)
-        setUpUI()
-        self.eventTitleTextField.delegate = self
-        self.eventDescriptionTextField.delegate = self
+        view.addSubview(reminderTimePicker)
     }
     
-    // Sends the new event to the entryPoint
-    @objc func onDoneButton() {
-        delegate?.recieveEvent(event: Event(datePicked: datePicker.date, eventName: eventTitleTextField.text ?? "", eventLocation: location, EventDescription :eventDescriptionTextField.text ?? "" ))
-        self.dismiss(animated: true, completion: nil)
-    }
-    
-    // Dismisses the addNewEventViewController without creating a view
-    @objc func onSwipeBack() {
-        self.modalTransitionStyle = .crossDissolve
-        self.dismiss(animated: true, completion: nil)
-    }
     
     // sets up the Constraints to all the subviews in the view controller
     private func setUpUI() {
@@ -164,6 +204,10 @@ class AddNewViewController: UIViewController, UITextFieldDelegate, locationRecie
         neverLateLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 10).isActive = true
         neverLateLabel.heightAnchor.constraint(equalToConstant: view.frame.height/7).isActive = true
         neverLateLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        
+        backButton.centerYAnchor.constraint(equalTo: neverLateLabel.centerYAnchor).isActive = true
+        backButton.centerXAnchor.constraint(equalTo: datePicker.leadingAnchor).isActive = true
+        backButton.heightAnchor.constraint(equalTo: neverLateLabel.heightAnchor).isActive = true
         
         eventTitleTextField.centerYAnchor.constraint(equalTo: neverLateLabel.bottomAnchor, constant: 10).isActive = true
         eventTitleTextField.leadingAnchor.constraint(equalTo: datePicker.leadingAnchor).isActive = true
@@ -187,7 +231,13 @@ class AddNewViewController: UIViewController, UITextFieldDelegate, locationRecie
         eventDescriptionTextField.topAnchor.constraint(equalTo: eventTitleTextField.bottomAnchor, constant: 10).isActive = true
         eventDescriptionTextField.leadingAnchor.constraint(equalTo: datePicker.leadingAnchor).isActive = true
         eventDescriptionTextField.widthAnchor.constraint(equalToConstant: datePicker.frame.width).isActive = true
-
+        
+        reminderTimePicker.leadingAnchor.constraint(equalTo: datePicker.leadingAnchor).isActive = true
+        reminderTimePicker.trailingAnchor.constraint(equalTo: datePicker.trailingAnchor).isActive = true
+        reminderTimePicker.topAnchor.constraint(equalTo: datePicker.bottomAnchor).isActive = true
+        reminderTimePicker.addArrangedSubview(hourButton)
+        reminderTimePicker.addArrangedSubview(halfHourButton)
+        reminderTimePicker.addArrangedSubview(quarterHourButton)
         
         doneButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         doneButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -view.frame.height/20).isActive = true
@@ -196,23 +246,26 @@ class AddNewViewController: UIViewController, UITextFieldDelegate, locationRecie
         
         datePicker.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         datePicker.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
-        
-        
-        isRepeatingLabel.topAnchor.constraint(equalTo: datePicker.bottomAnchor, constant: 10).isActive = true
-        isRepeatingLabel.leadingAnchor.constraint(equalTo: datePicker.leadingAnchor).isActive = true
-        isRepeating.topAnchor.constraint(equalTo: isRepeatingLabel.bottomAnchor).isActive = true
-        isRepeating.leadingAnchor.constraint(equalTo: isRepeatingLabel.leadingAnchor).isActive = true
-        
-        containerView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-        containerView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-        containerView.trailingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30).isActive = true
-        let gesture = UISwipeGestureRecognizer()
-        gesture.direction = .right
-        gesture.addTarget(self, action: #selector(onSwipeBack))
-        gesture.isEnabled = true
-        containerView.addGestureRecognizer(gesture)
+
     }
+    
+    
+    // MARK: Actions --------------------------------------------------------------------------------
+    // Sends the new event to the entryPoint
+    @objc private func onDoneButton() {
+        let newEvent = Event(datePicked: datePicker.date, eventName: eventTitleTextField.text ?? "", eventLocation: destinationLocation, currentLocation: startingLocation, EventDescription : eventDescriptionTextField.text ?? "" )
+        let url = GoogleRequest.getDriveTimeUrl(event: newEvent)
+        GoogleRequest.performRequest(url: url, event: newEvent) 
+        
+        delegate?.recieveEvent(event: newEvent)
+        self.navigationController?.popViewController(animated: true)
+    }
+    
+    @objc private func onBackButton() {
+        self.navigationController?.popViewController(animated: true)
+    }
+    
+    // Dismisses the addNewEventViewController without creating a view
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         self.view.endEditing(true)
@@ -221,7 +274,21 @@ class AddNewViewController: UIViewController, UITextFieldDelegate, locationRecie
     
     @objc func onSetLocationButton() {
         let vc = MapView()
-        vc.delegate = self
+        vc.sendEvent = { [weak self] destinationLocation, startingLocation in
+            self?.destinationLocation = destinationLocation
+            self?.addLocationButton.setTitle(destinationLocation.name, for: .normal)
+            self?.startingLocation = startingLocation
+        }
+        vc.modalPresentationStyle = .fullScreen
         self.present(vc, animated: true, completion: nil)
+    }
+    
+    #warning("implement real logic")
+    @objc func notificationModifierPressed(sender: UIButton) {
+        if (sender.backgroundColor == #colorLiteral(red: 0.7450980392, green: 0.7058823529, blue: 0.5647058824, alpha: 1)) {
+            sender.backgroundColor = .lightGray
+        } else {
+            sender.backgroundColor = #colorLiteral(red: 0.7450980392, green: 0.7058823529, blue: 0.5647058824, alpha: 1)
+        }
     }
 }

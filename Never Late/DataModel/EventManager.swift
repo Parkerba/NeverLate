@@ -37,7 +37,6 @@ public class EventManager {
     }
     
     // load any kind of codable object
-    
     static func load <T:Decodable> (_ fileName: String, with type: T.Type) -> T {
         let url =  getDocumentDirectory().appendingPathComponent(fileName, isDirectory: false)
         if !FileManager.default.fileExists(atPath: url.path) {
