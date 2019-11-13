@@ -161,10 +161,6 @@ final class AppCoordinator: NSObject, EventReciever {
         let mapItem = MKMapItem(placemark: placemark)
         mapItem.name = name
         mapItem.openInMaps(launchOptions: [:])
-    }
-    
-   
-    
-    
+    } 
 }
 
