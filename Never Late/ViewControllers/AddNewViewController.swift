@@ -31,6 +31,8 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
     
     var locationManager: CLLocationManager?
     
+    var displayMap : (() -> Void)!
+    
     // colors used
     
     let mainBackgroundColor = #colorLiteral(red: 0.9411764706, green: 0.9725490196, blue: 0.9960784314, alpha: 1)
@@ -97,7 +99,7 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
     let addLocationButton: UIButton = {
         let button = UIButton()
         button.setTitle("Add Location", for: .normal)
-        button.addTarget(self, action: #selector(onSetLocationButton) , for: .touchUpInside)
+        button.addTarget(self, action: #selector(onAddLocationButton) , for: .touchUpInside)
         button.layer.cornerRadius = 10
         button.titleLabel?.font = UIFont(name: "Copperplate-Bold", size: 25)!
         button.titleLabel?.numberOfLines = 2
@@ -272,17 +274,10 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
         return false
     }
     
-    @objc func onSetLocationButton() {
-        let vc = MapView()
-        vc.sendEvent = { [weak self] destinationLocation, startingLocation in
-            self?.destinationLocation = destinationLocation
-            self?.addLocationButton.setTitle(destinationLocation.name, for: .normal)
-            self?.startingLocation = startingLocation
-        }
-        vc.modalPresentationStyle = .fullScreen
-        self.present(vc, animated: true, completion: nil)
+    @objc func onAddLocationButton() {
+        displayMap()
     }
-    
+
     #warning("implement real logic")
     @objc func notificationModifierPressed(sender: UIButton) {
         if (sender.backgroundColor == #colorLiteral(red: 0.7450980392, green: 0.7058823529, blue: 0.5647058824, alpha: 1)) {

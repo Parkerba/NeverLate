@@ -202,7 +202,7 @@ class MapView: UIViewController, MKMapViewDelegate {
     
     // MARK: Actions --------------------------------------------------------------------------------
     @objc private func onBackButton() {
-        self.dismiss(animated: true, completion: nil)
+        self.navigationController?.popViewController(animated: true)
         locationManager.stopUpdatingLocation()
     }
     
@@ -243,7 +243,9 @@ class MapView: UIViewController, MKMapViewDelegate {
     
     @objc private func onDoneButton() {
         guard let sendEvent = sendEvent else {
-            return self.dismiss(animated: true, completion: nil)
+//            return self.dismiss(animated: true, completion: nil)
+            self.navigationController?.popViewController(animated: true)
+            return
         }
         guard let destinationLocation = destinationLocation else {
             let invalidAddress = UIAlertController(title: "Destination Location Not Set", message: "Set a destination to include a location in your event.", preferredStyle: .alert)
@@ -253,7 +255,8 @@ class MapView: UIViewController, MKMapViewDelegate {
         }
         sendEvent(destinationLocation, startingLocation ?? locationManager.location?.coordinate)
         locationManager.stopUpdatingLocation()
-        self.dismiss(animated: true, completion: nil)
+//        self.dismiss(animated: true, completion: nil)
+        self.navigationController?.popViewController(animated: true)
     }
     
     // This will center the map on the users location

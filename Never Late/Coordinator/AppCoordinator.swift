@@ -23,7 +23,6 @@ fileprivate class NotificationComponent: NSObject, UNUserNotificationCenterDeleg
 }
 
 
-
 // MARK: - AppCoordinator
 final class AppCoordinator: NSObject, EventReciever {
     
@@ -60,23 +59,34 @@ final class AppCoordinator: NSObject, EventReciever {
         self.navController = rootViewController
     }
     
-    public func showAddEvent() {
+    func displayAddNewViewController() {
         let vc = AddNewViewController()
+        vc.displayMap = {
+            self.displayMapView(addNewVC: vc)
+        }
         vc.delegate = self
-//        rootViewController.present(vc, animated: true, completion: nil)
         navController.pushViewController(vc, animated: true)
     }
     
-    func start() {
-        rootViewController.addNewEntry = {
-            self.showAddEvent()
+    func displayMapView(addNewVC: AddNewViewController) {
+        let vc = MapView()
+        vc.sendEvent = { destinationLocation, startingLocation in
+        addNewVC.destinationLocation = destinationLocation
+        addNewVC.addLocationButton.setTitle(destinationLocation.name, for: .normal)
+        addNewVC.startingLocation = startingLocation
         }
+        navController.pushViewController(vc, animated: true)
     }
     
     
     
+    func start() {
+        rootViewController.addNewEntry = {
+            self.displayAddNewViewController()
+        }
+    }
     
-    
+
     // MARK: Notification logic
     static func requestNotificationPermission(requestView: UIViewController) {
         let notificationCenter = UNUserNotificationCenter.current()
