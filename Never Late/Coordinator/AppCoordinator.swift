@@ -23,7 +23,7 @@ fileprivate class NotificationComponent: NSObject, UNUserNotificationCenterDeleg
 }
 
 
-// MARK: - AppCoordinator
+// MARK: - AppCoordinator - Handles the program flow and data passing.
 final class AppCoordinator: NSObject, EventReciever {
     
     func recieveEvent(event: Event) {
