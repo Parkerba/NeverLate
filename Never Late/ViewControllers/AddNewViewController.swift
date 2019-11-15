@@ -255,9 +255,9 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
     // MARK: Actions --------------------------------------------------------------------------------
     // Sends the new event to the entryPoint
     @objc private func onDoneButton() {
-        let newEvent = Event(datePicked: datePicker.date, eventName: eventTitleTextField.text ?? "", eventLocation: destinationLocation, currentLocation: startingLocation, EventDescription : eventDescriptionTextField.text ?? "" )
-        let url = GoogleRequest.getDriveTimeUrl(event: newEvent)
-        GoogleRequest.performRequest(url: url, event: newEvent) 
+        let newEvent = Event(datePicked: datePicker.date, eventName: eventTitleTextField.text ?? "", eventLocation: destinationLocation, currentLocation: startingLocation, EventDescription : eventDescriptionTextField.text ?? "")
+//        let url = GoogleRequest.getDriveTimeUrl(event: newEvent)
+//        GoogleRequest.performRequest(url: url, event: newEvent)
         
         delegate?.recieveEvent(event: newEvent)
         self.navigationController?.popViewController(animated: true)

@@ -13,25 +13,14 @@ import UserNotifications
 class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDelegate {
     
     // MARK: Passing/Recieving Data --------------------------------------------------------------------------------
-    var addNewEntry: (()->Void)?
-    var updateEvent: ((Event)->Void)?
+    var addNewEntry: (()->Void)!
     
-    // recieves the event sent from the addNewViewController
-    func addEvent(event: Event) {
-        event.saveEvent()
-        events.append(event)
-        events.sort(by: { $0.eventDate < $1.eventDate})
-        eventTable.reloadData()
-        if (event.locationName == nil)  {
-            AppCoordinator.addNotification(event: event)
-        }
-        else  {
-            addNotificationObservers()
-        }
-    }
+    var updateEvent: (()->Void)!
+    
 
     // MARK: Properties --------------------------------------------------------------------------------
     let buttonColor = #colorLiteral(red: 0.9851665668, green: 0.999414705, blue: 1, alpha: 0.1950181935) //hex: BEB490
+    
     let mainBackgroundColor = #colorLiteral(red: 0.9338286519, green: 0.9739060998, blue: 0.9988136888, alpha: 1) //hex: F0F8FE
     
     let backgroundImageView = UIImageView(image: #imageLiteral(resourceName: "geometric"))
@@ -99,12 +88,12 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = mainBackgroundColor
-        if (self.traitCollection.userInterfaceStyle == .dark) {
+        if (traitCollection.userInterfaceStyle == .dark) {
             backgroundImageView.image = #imageLiteral(resourceName: "geometricDarkMode")
         }
         setUpImageView()
         addSubviews()
-        self.loadEvents()
+        updateEvent()
         setUpUI()
         // ask for permission
         AppCoordinator.requestNotificationPermission(requestView: self)
@@ -163,17 +152,10 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
     }
     // Presents the addNewViewController where the user can add new events
     @objc func onAddButton() {
-        addNewEntry?()
+        addNewEntry()
     }
     
     var events: [Event] = [Event]()
-    
-    func loadEvents() {
-        events = EventManager.loadAll(type: Event.self)
-        events.sort(by: { $0.eventDate < $1.eventDate})
-    }
-    
-
 }
 
 // MARK: google request UI response --------------------------------------------------------------------------------
@@ -181,7 +163,7 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
 extension NeverLateEntryViewController {
     @objc func reloadTableData() {
         DispatchQueue.main.async {
-            self.loadEvents()
+            self.updateEvent()
             self.eventTable.reloadData()
             self.removeNotificationObservers()
         }
@@ -246,7 +228,6 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
     
     // Handling deleting Events and cooresponding notifications
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        
         if (editingStyle == .delete) {
             events[indexPath.row].deleteEvent()
             AppCoordinator.removeEventNotifications(event: events[indexPath.row])

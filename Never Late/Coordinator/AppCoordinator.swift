@@ -27,13 +27,21 @@ fileprivate class NotificationComponent: NSObject, UNUserNotificationCenterDeleg
 final class AppCoordinator: NSObject, EventReciever {
     
     func recieveEvent(event: Event) {
-        rootViewController.addEvent(event: event)
-        rootViewController.dismiss(animated: true, completion: nil)
+        event.saveEvent()
+        let url = GoogleRequest.getDriveTimeUrl(event: event)
+        GoogleRequest.performRequest(url: url, event: event)
+        reloadEvents()
+        if (event.locationName == nil)  {
+            AppCoordinator.addNotification(event: event)
+        }
+        else  {
+            rootViewController.addNotificationObservers()
+        }
         rootViewController.eventTable.reloadData()
     }
     
     func reloadEvents() {
-        rootViewController.loadEvents()
+        rootViewController.events = EventManager.loadAll(type: Event.self).sorted(by: { $0.eventDate < $1.eventDate})
         rootViewController.eventTable.reloadData()
     }
     
@@ -53,7 +61,7 @@ final class AppCoordinator: NSObject, EventReciever {
     private(set) var rootViewController: NeverLateEntryViewController
     private var navController: UINavigationController
     
-    // MARK: Life Cycle
+    // MARK: Life Cycle --------------------------------------------------------------------------------
     init(rootViewController: UINavigationController) {
         self.rootViewController = rootViewController.viewControllers.first as! NeverLateEntryViewController
         self.navController = rootViewController
@@ -71,23 +79,25 @@ final class AppCoordinator: NSObject, EventReciever {
     func displayMapView(addNewVC: AddNewViewController) {
         let vc = MapView()
         vc.sendEvent = { destinationLocation, startingLocation in
-        addNewVC.destinationLocation = destinationLocation
-        addNewVC.addLocationButton.setTitle(destinationLocation.name, for: .normal)
-        addNewVC.startingLocation = startingLocation
+            addNewVC.destinationLocation = destinationLocation
+            addNewVC.addLocationButton.setTitle(destinationLocation.name, for: .normal)
+            addNewVC.startingLocation = startingLocation
         }
         navController.pushViewController(vc, animated: true)
     }
-    
-    
     
     func start() {
         rootViewController.addNewEntry = {
             self.displayAddNewViewController()
         }
+        
+        rootViewController.updateEvent = {
+            self.reloadEvents()
+        }
     }
     
 
-    // MARK: Notification logic
+    // MARK: Notification logic --------------------------------------------------------------------------------
     static func requestNotificationPermission(requestView: UIViewController) {
         let notificationCenter = UNUserNotificationCenter.current()
         notificationCenter.requestAuthorization(options: [.alert,.sound], completionHandler: { granted, error in
