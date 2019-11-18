@@ -130,6 +130,16 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
         return button
     }()
     
+    let reminderTimePickerLabel: UILabel = {
+        let label = UILabel()
+        label.text = "ALERT: "
+        label.font = UIFont(name: "Copperplate-Bold", size: 20)!
+        label.backgroundColor = .clear
+        
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     let reminderTimePicker : UIStackView =  {
         let stack = UIStackView()
         stack.axis = .horizontal
@@ -197,6 +207,7 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
         view.addSubview(eventTitleTextField)
         view.addSubview(eventDescriptionTextField)
         view.addSubview(addLocationButton)
+        view.addSubview(reminderTimePickerLabel)
         view.addSubview(reminderTimePicker)
     }
     
@@ -235,9 +246,13 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
         eventDescriptionTextField.leadingAnchor.constraint(equalTo: datePicker.leadingAnchor).isActive = true
         eventDescriptionTextField.widthAnchor.constraint(equalToConstant: datePicker.frame.width).isActive = true
         
+        reminderTimePickerLabel.leadingAnchor.constraint(equalTo: datePicker.leadingAnchor).isActive = true
+        reminderTimePickerLabel.topAnchor.constraint(equalTo: datePicker.bottomAnchor, constant: 10).isActive = true
+        
+        
         reminderTimePicker.leadingAnchor.constraint(equalTo: datePicker.leadingAnchor).isActive = true
         reminderTimePicker.trailingAnchor.constraint(equalTo: datePicker.trailingAnchor).isActive = true
-        reminderTimePicker.topAnchor.constraint(equalTo: datePicker.bottomAnchor).isActive = true
+        reminderTimePicker.topAnchor.constraint(equalTo: reminderTimePickerLabel.bottomAnchor).isActive = true
         reminderTimePicker.addArrangedSubview(hourButton)
         reminderTimePicker.addArrangedSubview(halfHourButton)
         reminderTimePicker.addArrangedSubview(quarterHourButton)

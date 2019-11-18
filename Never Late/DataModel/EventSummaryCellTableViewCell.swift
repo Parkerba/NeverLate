@@ -15,7 +15,7 @@ class EventSummaryCellTableViewCell: UITableViewCell {
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.0985391695)
+        self.backgroundColor = #colorLiteral(red: 0.7450980392, green: 0.7058823529, blue: 0.5647058824, alpha: 1)
         self.layer.cornerRadius = 15
         addSubview(driveTimeLabel)
         addSubview(mainTitleLabel)

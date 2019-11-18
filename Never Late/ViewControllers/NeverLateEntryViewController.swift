@@ -21,16 +21,16 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
     
 
     // MARK: Properties --------------------------------------------------------------------------------
-    let buttonColor = #colorLiteral(red: 0.9851665668, green: 0.999414705, blue: 1, alpha: 0.1950181935) //hex: BEB490
+    let buttonColor = #colorLiteral(red: 0.7802982234, green: 0.7802982234, blue: 0.7802982234, alpha: 0.7533711473) //hex: BEB490
     
     let mainBackgroundColor = #colorLiteral(red: 0.9338286519, green: 0.9739060998, blue: 0.9988136888, alpha: 1) //hex: F0F8FE
     
-    let backgroundImageView = UIImageView(image: #imageLiteral(resourceName: "geometric"))
+//    let backgroundImageView = UIImageView(image: #imageLiteral(resourceName: "geometric"))
 
-    func setUpImageView() {
-        backgroundImageView.contentMode = .scaleAspectFill
-        backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
-    }
+//    func setUpImageView() {
+//        backgroundImageView.contentMode = .scaleAspectFill
+//        backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
+//    }
     
     
     // Top label denoting the name of the app
@@ -44,15 +44,15 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
         return label
     }()
     // settings button
-    let settingsButton: UIButton = {
-        let button = UIButton()
-        button.setImage(#imageLiteral(resourceName: "settingsIcon"),for: .normal)
-        button.layer.cornerRadius = 15
-        button.addTarget(self, action: #selector(onSettingsButton), for: .touchUpInside)
-        
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
+//    let settingsButton: UIButton = {
+//        let button = UIButton()
+//        button.setImage(#imageLiteral(resourceName: "settingsIcon"),for: .normal)
+//        button.layer.cornerRadius = 15
+//        button.addTarget(self, action: #selector(onSettingsButton), for: .touchUpInside)
+//
+//        button.translatesAutoresizingMaskIntoConstraints = false
+//        return button
+//    }()
     // button to present the VC to create new events
     let addButton: UIButton = {
         let button = UIButton()
@@ -90,10 +90,10 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = mainBackgroundColor
-        if (traitCollection.userInterfaceStyle == .dark) {
-            backgroundImageView.image = #imageLiteral(resourceName: "geometricDarkMode")
-        }
-        setUpImageView()
+//        if (traitCollection.userInterfaceStyle == .dark) {
+//            backgroundImageView.image = #imageLiteral(resourceName: "geometricDarkMode")
+//        }
+//        setUpImageView()
         addSubviews()
         updateEvent()
         setUpUI()
@@ -106,9 +106,9 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
     }
     
     private func addSubviews() {
-        view.addSubview(backgroundImageView)
+//        view.addSubview(backgroundImageView)
         view.addSubview(neverLateLabel)
-        view.addSubview(settingsButton)
+//        view.addSubview(settingsButton)
         view.addSubview(addButton)
         view.addSubview(eventTableLabel)
         view.addSubview(eventTable)
@@ -116,10 +116,10 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
     
     // sets up the Constraints to all the subviews in the view controller
     func setUpUI() {
-        backgroundImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        backgroundImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
-        backgroundImageView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        backgroundImageView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
+//        backgroundImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+//        backgroundImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+//        backgroundImageView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+//        backgroundImageView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
 
         
         // app name label constraints
@@ -128,16 +128,16 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
         neverLateLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         
         // settings button contraints
-        settingsButton.topAnchor.constraint(equalTo: neverLateLabel.bottomAnchor, constant: 10).isActive = true
-        settingsButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: view.frame.width/10).isActive = true
-        settingsButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -view.frame.width/10).isActive = true
-        settingsButton.backgroundColor = buttonColor
+//        settingsButton.topAnchor.constraint(equalTo: neverLateLabel.bottomAnchor, constant: 10).isActive = true
+//        settingsButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: view.frame.width/10).isActive = true
+//        settingsButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -view.frame.width/10).isActive = true
+//        settingsButton.backgroundColor = buttonColor
         
         // add button constraints
-        addButton.topAnchor.constraint(equalTo: settingsButton.bottomAnchor, constant: 10).isActive = true
+        addButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -view.frame.height*0.70).isActive = true
         addButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: view.frame.width/10).isActive = true
         addButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -view.frame.width/10).isActive = true
-        addButton.heightAnchor.constraint(equalTo: settingsButton.heightAnchor).isActive = true
+        addButton.heightAnchor.constraint(equalToConstant: view.frame.height/7).isActive = true
         addButton.backgroundColor = buttonColor
         
         eventTableLabel.topAnchor.constraint(equalTo: addButton.bottomAnchor, constant: 10).isActive = true
