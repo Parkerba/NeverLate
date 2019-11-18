@@ -31,6 +31,9 @@ class MapView: UIViewController, MKMapViewDelegate {
     var destinationLocation: MKPlacemark?
     
     var isUpdatingDestination: Bool?
+    
+    private var destinationSearchBarYConstraint : NSLayoutConstraint?
+
 
 
     
@@ -166,7 +169,7 @@ class MapView: UIViewController, MKMapViewDelegate {
         searchSuggestion.dataSource = self
         searchSuggestion.delegate = self
     }
-    private var destinationSearchBarYConstraint : NSLayoutConstraint?
+    
     func setUpUI() {
         map.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
         map.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true

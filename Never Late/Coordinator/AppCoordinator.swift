@@ -8,9 +8,10 @@ fileprivate class NotificationComponent: NSObject, UNUserNotificationCenterDeleg
     private override init() {
         super.init()
     }
+    //Singleton object
     static let notificationCoordinator = NotificationComponent()
     
-    
+    //User clicked on notification option
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         if response.actionIdentifier == "openWithMaps" {
             let event = EventManager.load(response.notification.request.identifier, with: Event.self)
@@ -26,18 +27,19 @@ fileprivate class NotificationComponent: NSObject, UNUserNotificationCenterDeleg
 // MARK: - AppCoordinator - Handles the program flow and data passing.
 final class AppCoordinator: NSObject, EventReciever {
     
-    func recieveEvent(event: Event) {
-        event.saveEvent()
-        let url = GoogleRequest.getDriveTimeUrl(event: event)
-        GoogleRequest.performRequest(url: url, event: event)
+    func createEvent(event: Event) {
+        AppCoordinator.saveEvent(event: event)
         reloadEvents()
-        if (event.locationName == nil)  {
+        
+        if (event.locationName == nil) {
             AppCoordinator.addNotification(event: event)
         }
-        else  {
+            
+        else {
+            let url = GoogleRequest.getDriveTimeUrl(event: event)
+            GoogleRequest.performRequest(url: url, event: event)
             rootViewController.addNotificationObservers()
         }
-        rootViewController.eventTable.reloadData()
     }
     
     func reloadEvents() {
@@ -148,10 +150,19 @@ final class AppCoordinator: NSObject, EventReciever {
         }
     }
     
+    static func deleteEvent(event: Event) {
+        EventManager.delete(event.eventIdentifier.uuidString)
+    }
+    
+    static func saveEvent(event: Event) {
+        EventManager.save(object: event.self, with: event.eventIdentifier.uuidString)
+    }
+    
     static func removeEventNotifications(event: Event) {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [event.eventIdentifier.uuidString])
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [event.eventIdentifier.uuidString])
     }
+
     
     static func openAppleMaps(event: Event) {
         guard let lat = event.locationLatitude else {
@@ -171,6 +182,6 @@ final class AppCoordinator: NSObject, EventReciever {
         let mapItem = MKMapItem(placemark: placemark)
         mapItem.name = name
         mapItem.openInMaps(launchOptions: [:])
-    } 
+    }
 }
 

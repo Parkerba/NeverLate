@@ -12,7 +12,7 @@ import CoreLocation
 
 
 protocol EventReciever {
-    func recieveEvent(event: Event)
+    func createEvent(event: Event)
 }
 
 
@@ -30,7 +30,7 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
     var startingLocation: CLLocationCoordinate2D?
     
     var locationManager: CLLocationManager?
-    
+        
     var displayMap : (() -> Void)!
     
     // colors used
@@ -179,6 +179,7 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = (self.traitCollection.userInterfaceStyle == .dark) ? .black:mainBackgroundColor
+        view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(textFieldShouldReturn(_:))))
         addSubviews()
         setUpUI()
         self.navigationController?.interactivePopGestureRecognizer?.delegate = nil
@@ -256,18 +257,15 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
     // Sends the new event to the entryPoint
     @objc private func onDoneButton() {
         let newEvent = Event(datePicked: datePicker.date, eventName: eventTitleTextField.text ?? "", eventLocation: destinationLocation, currentLocation: startingLocation, EventDescription : eventDescriptionTextField.text ?? "")
-//        let url = GoogleRequest.getDriveTimeUrl(event: newEvent)
-//        GoogleRequest.performRequest(url: url, event: newEvent)
-        
-        delegate?.recieveEvent(event: newEvent)
+        delegate?.createEvent(event: newEvent)
         self.navigationController?.popViewController(animated: true)
     }
     
+    // Dismisses the addNewEventViewController without creating an event
     @objc private func onBackButton() {
         self.navigationController?.popViewController(animated: true)
     }
     
-    // Dismisses the addNewEventViewController without creating a view
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         self.view.endEditing(true)

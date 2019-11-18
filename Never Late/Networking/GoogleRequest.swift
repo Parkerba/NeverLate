@@ -38,7 +38,7 @@ final class GoogleRequest {
             else {return nil}
         
         let departureTimeInSeconds : Int = Int(event.departureTime?.timeIntervalSince1970 ?? event.eventDate.timeIntervalSince1970)
-        let apiKey = "yourAPIKEY"
+        let apiKey = "yourapikey"
         
         let returnUrl: String = "\(basePath)\(currentLatitude),\(currentLongitude)&destinations=\(destLatitudeComponent),\(destLongitudeComponent)&departure_time=\(departureTimeInSeconds)&traffic_model=best_guess&key=\(apiKey)"
         return URL(string: returnUrl)
@@ -100,7 +100,7 @@ final class GoogleRequest {
     static private func finalizeEvent(event: Event) {
         print("Finished request with after performing \(apiCalls) api calls")
         apiCalls = 0
-        event.saveEvent()
+        AppCoordinator.saveEvent(event: event)
         AppCoordinator.addNotification(event: event)
         sendDriveTimeNotification()
     }

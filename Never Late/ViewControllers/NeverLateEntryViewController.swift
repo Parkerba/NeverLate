@@ -17,6 +17,8 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
     
     var updateEvent: (()->Void)!
     
+    var openAppleMaps: (()->Void)?
+    
 
     // MARK: Properties --------------------------------------------------------------------------------
     let buttonColor = #colorLiteral(red: 0.9851665668, green: 0.999414705, blue: 1, alpha: 0.1950181935) //hex: BEB490
@@ -99,6 +101,10 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
         AppCoordinator.requestNotificationPermission(requestView: self)
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        openAppleMaps?()
+    }
+    
     private func addSubviews() {
         view.addSubview(backgroundImageView)
         view.addSubview(neverLateLabel)
@@ -152,6 +158,7 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
     }
     // Presents the addNewViewController where the user can add new events
     @objc func onAddButton() {
+        // callback defined by the AppCoordinator
         addNewEntry()
     }
     
@@ -167,6 +174,10 @@ extension NeverLateEntryViewController {
             self.eventTable.reloadData()
             self.removeNotificationObservers()
         }
+    }
+    
+    @objc func openMapsFromNotification() {
+        openAppleMaps?()
     }
     
     @objc func invalidRequestPresentError() {
@@ -229,7 +240,7 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
     // Handling deleting Events and cooresponding notifications
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if (editingStyle == .delete) {
-            events[indexPath.row].deleteEvent()
+            AppCoordinator.deleteEvent(event: events[indexPath.row])
             AppCoordinator.removeEventNotifications(event: events[indexPath.row])
             events.remove(at: indexPath.row)
             tableView.beginUpdates()
