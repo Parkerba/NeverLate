@@ -10,20 +10,22 @@ import UIKit
 
 class EventSummaryCellTableViewCell: UITableViewCell {
     var event: Event? = nil
-    var driveTimeLabel: UILabel = UILabel()
-    var mainTitleLabel: UILabel = UILabel()
+    var driveTimeLabel = UILabel()
+    var mainTitleLabel = UILabel()
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         self.backgroundColor = #colorLiteral(red: 0.7450980392, green: 0.7058823529, blue: 0.5647058824, alpha: 1)
         self.layer.cornerRadius = 15
+        self.clipsToBounds = true
+        backgroundView?.layer.cornerRadius = 15
         addSubview(driveTimeLabel)
         addSubview(mainTitleLabel)
         configureLabels()
     }
     
-    
     func configureLabels() {
+        
         mainTitleLabel.layer.cornerRadius = 10
         mainTitleLabel.numberOfLines = 0
         mainTitleLabel.adjustsFontSizeToFitWidth = true
@@ -47,6 +49,7 @@ class EventSummaryCellTableViewCell: UITableViewCell {
     }
     
     func set(passedEvent: Event) {
+        self.layer.cornerRadius = 15
         self.event = passedEvent
         let eventTitle : String = "\(event!.title)\n"
         let eventLocationName : String = (event!.locationName == nil) ? "" : "\(event!.locationName!)\n"
@@ -85,13 +88,13 @@ class EventSummaryCellTableViewCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
+        self.layer.cornerRadius = 15
+        self.clipsToBounds = true
         // Initialization code
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
-
-        // Configure the view for the selected state
     }
     
     

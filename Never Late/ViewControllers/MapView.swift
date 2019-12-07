@@ -30,7 +30,7 @@ class MapView: UIViewController, MKMapViewDelegate {
     
     var destinationLocation: MKPlacemark?
     
-    var isUpdatingDestination: Bool?
+    private var isUpdatingDestination: Bool?
     
     private var destinationSearchBarYConstraint : NSLayoutConstraint?
 
@@ -57,7 +57,7 @@ class MapView: UIViewController, MKMapViewDelegate {
         return toggle
     }()
     
-    // Only visible of startingLocationToggle is toggled
+    // Only visible if startingLocationToggle is toggled
     let startingLocationSearchBar: UISearchBar = {
         let searchBar = UISearchBar()
         searchBar.placeholder = "Starting Location"
@@ -258,7 +258,6 @@ class MapView: UIViewController, MKMapViewDelegate {
         }
         sendEvent(destinationLocation, startingLocation ?? locationManager.location?.coordinate)
         locationManager.stopUpdatingLocation()
-//        self.dismiss(animated: true, completion: nil)
         self.navigationController?.popViewController(animated: true)
     }
     
@@ -322,10 +321,11 @@ extension MapView: UISearchBarDelegate {
         searchCompleter.queryFragment = searchBar.text!
         results = searchCompleter.results
         searchSuggestion.isHidden = false
+        
         let searchRequest = MKLocalSearch.Request()
         searchRequest.naturalLanguageQuery = searchBar.text ?? ""
-            
         searchRequest.region = searchCompleter.region
+        
         let search = MKLocalSearch(request: searchRequest)
         search.start { [unowned self] response, error in
             guard let response = response else {

@@ -15,23 +15,18 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
     // MARK: Passing/Recieving Data --------------------------------------------------------------------------------
     var addNewEntry: (()->Void)!
     
-    var updateEvent: (()->Void)!
+    var updateEventTable: (()->Void)!
     
     var openAppleMaps: (()->Void)?
     
-
+    var refreshEvent: ((Event)->Void)?
+    
+    var events: [Event] = [Event]()
+    
     // MARK: Properties --------------------------------------------------------------------------------
     let buttonColor = #colorLiteral(red: 0.7802982234, green: 0.7802982234, blue: 0.7802982234, alpha: 0.7533711473) //hex: BEB490
     
     let mainBackgroundColor = #colorLiteral(red: 0.9338286519, green: 0.9739060998, blue: 0.9988136888, alpha: 1) //hex: F0F8FE
-    
-//    let backgroundImageView = UIImageView(image: #imageLiteral(resourceName: "geometric"))
-
-//    func setUpImageView() {
-//        backgroundImageView.contentMode = .scaleAspectFill
-//        backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
-//    }
-    
     
     // Top label denoting the name of the app
     let neverLateLabel : UILabel = {
@@ -43,16 +38,7 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    // settings button
-//    let settingsButton: UIButton = {
-//        let button = UIButton()
-//        button.setImage(#imageLiteral(resourceName: "settingsIcon"),for: .normal)
-//        button.layer.cornerRadius = 15
-//        button.addTarget(self, action: #selector(onSettingsButton), for: .touchUpInside)
-//
-//        button.translatesAutoresizingMaskIntoConstraints = false
-//        return button
-//    }()
+
     // button to present the VC to create new events
     let addButton: UIButton = {
         let button = UIButton()
@@ -81,21 +67,31 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
         tableView.backgroundColor = .clear
         tableView.register(EventSummaryCellTableViewCell.self, forCellReuseIdentifier: "eventCell")
         tableView.rowHeight = 90
+        tableView.layer.cornerRadius = 10
+        tableView.clipsToBounds = true
         
         tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
+    }()
+    
+    let detailViewBlurr : UIView = {
+        let blurrView = UIView()
+        blurrView.layer.opacity = 0.4
+        blurrView.backgroundColor = .lightGray
+        blurrView.isHidden = true
+        blurrView.translatesAutoresizingMaskIntoConstraints = false
+        return blurrView
     }()
     
     // MARK: LifeCycle --------------------------------------------------------------------------------
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = mainBackgroundColor
-//        if (traitCollection.userInterfaceStyle == .dark) {
-//            backgroundImageView.image = #imageLiteral(resourceName: "geometricDarkMode")
-//        }
-//        setUpImageView()
+        if (traitCollection.userInterfaceStyle == .dark) {
+            view.backgroundColor = .black
+        }
         addSubviews()
-        updateEvent()
+        updateEventTable()
         setUpUI()
         // ask for permission
         AppCoordinator.requestNotificationPermission(requestView: self)
@@ -106,32 +102,19 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
     }
     
     private func addSubviews() {
-//        view.addSubview(backgroundImageView)
         view.addSubview(neverLateLabel)
-//        view.addSubview(settingsButton)
         view.addSubview(addButton)
         view.addSubview(eventTableLabel)
         view.addSubview(eventTable)
+        view.addSubview(detailViewBlurr)
     }
     
     // sets up the Constraints to all the subviews in the view controller
-    func setUpUI() {
-//        backgroundImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-//        backgroundImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
-//        backgroundImageView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-//        backgroundImageView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
-
-        
+    fileprivate func addConstraints() {
         // app name label constraints
         neverLateLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 10).isActive = true
         neverLateLabel.heightAnchor.constraint(equalToConstant: view.frame.height/7).isActive = true
         neverLateLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        
-        // settings button contraints
-//        settingsButton.topAnchor.constraint(equalTo: neverLateLabel.bottomAnchor, constant: 10).isActive = true
-//        settingsButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: view.frame.width/10).isActive = true
-//        settingsButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -view.frame.width/10).isActive = true
-//        settingsButton.backgroundColor = buttonColor
         
         // add button constraints
         addButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -view.frame.height*0.70).isActive = true
@@ -148,8 +131,21 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
         eventTable.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: view.frame.width/50).isActive = true
         eventTable.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -10).isActive = true
         eventTable.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -view.frame.width/50).isActive = true
+        
+        detailViewBlurr.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        detailViewBlurr.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        detailViewBlurr.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        detailViewBlurr.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+    }
+    
+    fileprivate func setDelegates() {
         eventTable.delegate = self
         eventTable.dataSource = self
+    }
+    
+    func setUpUI() {
+        addConstraints()
+        setDelegates()
     }
     
     // MARK: Actions  --------------------------------------------------------------------------------
@@ -161,8 +157,6 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
         // callback defined by the AppCoordinator
         addNewEntry()
     }
-    
-    var events: [Event] = [Event]()
 }
 
 // MARK: google request UI response --------------------------------------------------------------------------------
@@ -170,7 +164,7 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
 extension NeverLateEntryViewController {
     @objc func reloadTableData() {
         DispatchQueue.main.async {
-            self.updateEvent()
+            self.updateEventTable()
             self.eventTable.reloadData()
             self.removeNotificationObservers()
         }
@@ -212,9 +206,6 @@ extension NeverLateEntryViewController {
     }
 }
 
-
-
-
 // MARK: TableView Functionality --------------------------------------------------------------------------------
 extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -224,8 +215,15 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "eventCell", for: indexPath) as! EventSummaryCellTableViewCell
         cell.set(passedEvent: events[indexPath.row])
-        cell.selectionStyle = .none
+        cell.selectionStyle = .blue
         return cell
+    }
+    
+    
+    @objc func printLongPressed() {
+        if let row = eventTable.indexPathForSelectedRow?.row {
+            AppCoordinator.openAppleMaps(event: events[row])
+        }
     }
     
     // Gives ability to edit the event table
@@ -233,19 +231,61 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
         return true
     }
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        AppCoordinator.openAppleMaps(event: events[indexPath.row])
+    fileprivate func displayDetailViewWithAnimation(_ vc: DetailView) {
+        var yAnchor = vc.bottomAnchor.constraint(equalTo: view.topAnchor, constant: -20)
+        yAnchor.isActive = true
+        vc.widthAnchor.constraint(equalToConstant: view.frame.width/1.5).isActive = true
+        vc.heightAnchor.constraint(equalToConstant: view.frame.height/2).isActive = true
+        vc.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        view.layoutIfNeeded()
+        yAnchor.isActive = false
+        yAnchor = vc.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        yAnchor.isActive = true
+        UIView.animate(withDuration: 0.4) {
+            self.view.layoutIfNeeded()
+        }
+        
+        vc.dismissAnimation = {
+            yAnchor.isActive = false
+            yAnchor = vc.topAnchor.constraint(equalTo: self.view.bottomAnchor)
+            yAnchor.isActive = true
+            UIView.animate(withDuration: 0.4, animations: { self.view.layoutIfNeeded()}) { (finished: Bool) in
+                vc.removeFromSuperview()
+                self.updateEventTable()
+                self.detailViewBlurr.isHidden = true
+            }
+        }
     }
     
-    // Handling deleting Events and cooresponding notifications
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if (editingStyle == .delete) {
-            AppCoordinator.deleteEvent(event: events[indexPath.row])
-            AppCoordinator.removeEventNotifications(event: events[indexPath.row])
-            events.remove(at: indexPath.row)
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        detailViewBlurr.isHidden = false
+        let vc = DetailView()
+        vc.translatesAutoresizingMaskIntoConstraints = false
+        vc.setUp(event: events[indexPath.row])
+        vc.parentRef = self
+        view.addSubview(vc)
+        displayDetailViewWithAnimation(vc)
+    }
+
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .normal, title: "Delete") { [weak self] (action, view, actionPerformed) in
+            AppCoordinator.deleteEvent(event: self!.events[indexPath.row])
+            AppCoordinator.removeEventNotifications(event: self!.events[indexPath.row])
+            self!.events.remove(at: indexPath.row)
             tableView.beginUpdates()
             tableView.deleteRows(at: [indexPath], with: .automatic)
             tableView.endUpdates()
         }
+        deleteAction.backgroundColor = .red
+        return UISwipeActionsConfiguration(actions: [deleteAction])
+    }
+     
+    func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let openMapsAction = UIContextualAction(style: .normal, title: "Open in Maps") { [weak self] (action, view, actionPerformed) in
+            AppCoordinator.openAppleMaps(event: self!.events[indexPath.row])
+        }
+        openMapsAction.backgroundColor = .systemGreen
+         
+        return UISwipeActionsConfiguration(actions: [openMapsAction])
     }
 }

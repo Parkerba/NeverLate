@@ -23,9 +23,14 @@ fileprivate class NotificationComponent: NSObject, UNUserNotificationCenterDeleg
     }
 }
 
-
 // MARK: - AppCoordinator - Handles the program flow and data passing.
 final class AppCoordinator: NSObject, EventReciever {
+    
+    func getDriveTimeInformation(_ event: Event) {
+        let url = GoogleRequest.getDriveTimeUrl(event: event)
+        GoogleRequest.performRequest(url: url, event: event)
+        rootViewController.addNotificationObservers()
+    }
     
     func createEvent(event: Event) {
         AppCoordinator.saveEvent(event: event)
@@ -36,9 +41,7 @@ final class AppCoordinator: NSObject, EventReciever {
         }
             
         else {
-            let url = GoogleRequest.getDriveTimeUrl(event: event)
-            GoogleRequest.performRequest(url: url, event: event)
-            rootViewController.addNotificationObservers()
+            getDriveTimeInformation(event)
         }
     }
     
@@ -93,7 +96,10 @@ final class AppCoordinator: NSObject, EventReciever {
             self.displayAddNewViewController()
         }
         
-        rootViewController.updateEvent = {
+        rootViewController.refreshEvent = { event in
+            self.getDriveTimeInformation(event)
+        }
+        rootViewController.updateEventTable = {
             self.reloadEvents()
         }
     }
@@ -126,7 +132,7 @@ final class AppCoordinator: NSObject, EventReciever {
           
         // Setting up the content of the notification
         let content = UNMutableNotificationContent()
-        content.body = "\(event.title)\nTime to leave\(reminderName)"
+        content.body = "\(event.title)\nTime to leave\(reminderName)\n\(event.eventDescription)"
         content.sound = UNNotificationSound.defaultCriticalSound(withAudioVolume: 1)
         content.categoryIdentifier = "notificationAction"
         
@@ -156,6 +162,12 @@ final class AppCoordinator: NSObject, EventReciever {
     
     static func saveEvent(event: Event) {
         EventManager.save(object: event.self, with: event.eventIdentifier.uuidString)
+    }
+    
+    static func updateEvent(event: Event) {
+        saveEvent(event: event)
+        removeEventNotifications(event: event)
+        addNotification(event: event)
     }
     
     static func removeEventNotifications(event: Event) {
