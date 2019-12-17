@@ -27,3 +27,5 @@ The key should be inserted as a String that is being assigned to the variable ti
 - - swipe left to delete the event and cancel the scheduled notification
 - - tap to present a detail view where you can edit the event information!
 
+Finally: This application is a work in progress, feel free to leave me constructive feedback at parkera13@gmail.com thanks!
+
