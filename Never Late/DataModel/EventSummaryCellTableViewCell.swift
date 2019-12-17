@@ -13,21 +13,35 @@ class EventSummaryCellTableViewCell: UITableViewCell {
     var driveTimeLabel = UILabel()
     var mainTitleLabel = UILabel()
     
+    var containerView : UIView = {
+        let view = UIView()
+        
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.backgroundColor = #colorLiteral(red: 0.7450980392, green: 0.7058823529, blue: 0.5647058824, alpha: 1)
-        self.layer.cornerRadius = 15
-        self.clipsToBounds = true
-        backgroundView?.layer.cornerRadius = 15
-        addSubview(driveTimeLabel)
-        addSubview(mainTitleLabel)
+        self.backgroundColor = .clear
+        containerView.layer.cornerRadius = 15
+        containerView.clipsToBounds = true
+        containerView.backgroundColor = #colorLiteral(red: 0.8039215803, green: 0.8039215803, blue: 0.8039215803, alpha: 0.5)
+        addSubview(containerView)
+        containerView.addSubview(mainTitleLabel)
+        containerView.addSubview(driveTimeLabel)
         configureLabels()
     }
     
     func configureLabels() {
         
+        containerView.leadingAnchor.constraint(equalTo: self.leadingAnchor).isActive = true
+        containerView.trailingAnchor.constraint(equalTo: self.trailingAnchor).isActive = true
+        containerView.topAnchor.constraint(equalTo: self.topAnchor).isActive = true
+        containerView.bottomAnchor.constraint(equalTo: self.bottomAnchor).isActive = true
+
+        
         mainTitleLabel.layer.cornerRadius = 10
-        mainTitleLabel.numberOfLines = 0
+        mainTitleLabel.numberOfLines = 4
         mainTitleLabel.adjustsFontSizeToFitWidth = true
         
         driveTimeLabel.layer.cornerRadius = 20
@@ -37,13 +51,13 @@ class EventSummaryCellTableViewCell: UITableViewCell {
         driveTimeLabel.numberOfLines = 0
         
         mainTitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        mainTitleLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
-        mainTitleLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 10).isActive = true
+        mainTitleLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
+        mainTitleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 10).isActive = true
         mainTitleLabel.trailingAnchor.constraint(equalTo: driveTimeLabel.leadingAnchor, constant: -10).isActive = true
         
         driveTimeLabel.translatesAutoresizingMaskIntoConstraints = false
-        driveTimeLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
-        driveTimeLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -10).isActive = true
+        driveTimeLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
+        driveTimeLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10).isActive = true
         driveTimeLabel.widthAnchor.constraint(equalToConstant: self.frame.width/4).isActive = true
         driveTimeLabel.heightAnchor.constraint(equalToConstant: self.frame.height).isActive = true
     }

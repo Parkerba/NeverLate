@@ -38,7 +38,7 @@ final class GoogleRequest {
             else {return nil}
         
         let departureTimeInSeconds : Int = Int(event.departureTime?.timeIntervalSince1970 ?? event.eventDate.timeIntervalSince1970)
-        let apiKey = "yourAPIKey"
+        let apiKey = "yourOwnApiKey"
         
         let returnUrl: String = "\(basePath)\(currentLatitude),\(currentLongitude)&destinations=\(destLatitudeComponent),\(destLongitudeComponent)&departure_time=\(departureTimeInSeconds)&traffic_model=best_guess&key=\(apiKey)"
         return URL(string: returnUrl)

@@ -14,7 +14,7 @@ class DetailView: UIView, UITextFieldDelegate {
     
     var event: Event!
     
-    var parentRef: NeverLateEntryViewController?
+    weak var parentRef: NeverLateEntryViewController?
     
     var dismissAnimation : (() -> Void)!
     
@@ -22,12 +22,13 @@ class DetailView: UIView, UITextFieldDelegate {
         let field = UITextField()
         field.font = UIFont(name: "Copperplate-Bold", size: 20)!
         field.placeholder = "Title"
+        field.adjustsFontSizeToFitWidth = true
         
         field.translatesAutoresizingMaskIntoConstraints = false
         return field
     }()
        
-       //Line separating the views
+       //Line separating the textfield
     let dividerView : UIView = {
         let retView = UIView()
         retView.backgroundColor = .lightGray
@@ -36,7 +37,7 @@ class DetailView: UIView, UITextFieldDelegate {
         return retView
     }()
        
-       //Line separating the views
+       //Line separating the textfield
     let secondDividerView : UIView = {
         let retView = UIView()
         retView.backgroundColor = .lightGray
@@ -49,9 +50,34 @@ class DetailView: UIView, UITextFieldDelegate {
         let field = UITextField()
         field.font = UIFont(name: "Copperplate-Bold", size: 20)!
         field.placeholder = "Description"
+        field.adjustsFontSizeToFitWidth = true
            
         field.translatesAutoresizingMaskIntoConstraints = false
         return field
+    }()
+    
+    let driveTimeLabel : UILabel = {
+        let label = UILabel()
+        label.font = UIFont(name: "Copperplate-Bold", size: 15)!
+        
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    let arrivalTimeLabel : UILabel = {
+        let label = UILabel()
+        label.font = UIFont(name: "Copperplate-Bold", size: 15)!
+        
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    let departureTimeLabel : UILabel = {
+        let label = UILabel()
+        label.font = UIFont(name: "Copperplate-Bold", size: 15)!
+        
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
     }()
         
     var dismissButton : UIButton = {
@@ -59,14 +85,13 @@ class DetailView: UIView, UITextFieldDelegate {
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setBackgroundImage(#imageLiteral(resourceName: "downArrow"), for: .normal)
         button.backgroundColor = .lightGray
-        button.addTarget(self, action: #selector(dismiss), for: .touchUpInside)
+        button.addTarget(self, action: #selector(dismiss), for: .allTouchEvents)
         return button
     }()
     
     var dismissBackground : UIView = {
         let view = UIView()
         view.backgroundColor = .lightGray
-        view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismiss)))
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -102,10 +127,14 @@ class DetailView: UIView, UITextFieldDelegate {
         addSubview(dividerView)
         addSubview(secondDividerView)
         addSubview(descriptionText)
+        addSubview(arrivalTimeLabel)
+        addSubview(departureTimeLabel)
+        addSubview(driveTimeLabel)
         addSubview(dismissBackground)
         addSubview(dismissButton)
     }
     
+    // formats the textfields
     fileprivate func setTextFields(_ event: Event) {
         titleText.text = event.title
         titleText.font = UIFont(name: "Copperplate-Bold", size: 20)!
@@ -118,6 +147,7 @@ class DetailView: UIView, UITextFieldDelegate {
         descriptionText.delegate = self
     }
     
+    // Sets the constraints of properties
     fileprivate func setConstraints() {
         
         titleText.topAnchor.constraint(equalTo: saveButton.bottomAnchor, constant: 10).isActive = true
@@ -137,6 +167,15 @@ class DetailView: UIView, UITextFieldDelegate {
         secondDividerView.heightAnchor.constraint(equalToConstant: 1).isActive = true
         secondDividerView.centerYAnchor.constraint(equalTo: descriptionText.bottomAnchor, constant: 5).isActive = true
         secondDividerView.widthAnchor.constraint(equalTo: self.widthAnchor).isActive = true
+        
+        driveTimeLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 5).isActive = true
+        driveTimeLabel.topAnchor.constraint(equalTo: secondDividerView.bottomAnchor, constant: 5).isActive = true
+        
+        departureTimeLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 5).isActive = true
+        departureTimeLabel.topAnchor.constraint(equalTo: driveTimeLabel.bottomAnchor, constant: 5).isActive = true
+
+        arrivalTimeLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 5).isActive = true
+        arrivalTimeLabel.topAnchor.constraint(equalTo: departureTimeLabel.bottomAnchor, constant: 5).isActive = true
 
         refreshButton.topAnchor.constraint(equalTo: self.topAnchor, constant: 5).isActive = true
         refreshButton.widthAnchor.constraint(equalToConstant: 40).isActive = true
@@ -157,13 +196,20 @@ class DetailView: UIView, UITextFieldDelegate {
         dismissBackground.bottomAnchor.constraint(equalTo: self.bottomAnchor).isActive = true
 
     }
-        
+    
+    // Sets the constraints, text and gesture recognizers of the properties.
     func setUp(event: Event) {
         customizeAppearance()
         addSubviews()
+        self.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard)))
+        let swipeDownGesture = UISwipeGestureRecognizer(target: self, action: #selector(dismiss))
+        swipeDownGesture.direction = .down
+        self.addGestureRecognizer(swipeDownGesture)
+        dismissBackground.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismiss)))
         setTextFields(event)
         setConstraints()
         self.event = event
+        setLabels()
     }
     
     @objc func dismiss() {
@@ -181,18 +227,25 @@ class DetailView: UIView, UITextFieldDelegate {
         self.endEditing(true)
     }
     
+    // This gives the user the option to refresh the drive time information by presenting an alert view controller
     @objc func refresh() {
+        
+        
         let userRefreshPreference = UIAlertController(title: "Refresh", message: "Would you like to update the starting location to your current location or use the previously set starting location?", preferredStyle: .alert)
+        
+        // Grabs users current location and uses this as the starting location.
         let yes = UIAlertAction(title: "Current", style: .default) { _ in
             let locationManager = CLLocationManager()
             let currentLocation = locationManager.location?.coordinate
             self.event.currentLatitude = currentLocation?.latitude
             self.event.currentLongitude = currentLocation?.longitude
             self.parentRef?.refreshEvent?(self.event)
+            self.dismiss()
         }
-        
+        // Refreshes using the currently set starting location of the event.
         let no = UIAlertAction(title: "Original", style: .default) { _ in
             self.parentRef?.refreshEvent?(self.event)
+            self.dismiss()
         }
         
         let cancel = UIAlertAction(title: "Cancel", style: .default, handler: nil)
@@ -201,6 +254,16 @@ class DetailView: UIView, UITextFieldDelegate {
         userRefreshPreference.addAction(no)
         userRefreshPreference.addAction(cancel)
         parentRef?.present(userRefreshPreference, animated: true, completion: nil)
+    }
+    
+    // Sets the text of the labels
+    func setLabels() {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        formatter.timeZone = .autoupdatingCurrent
+        departureTimeLabel.text = "Departure Time: \(formatter.string(from: event.departureTime!))"
+        arrivalTimeLabel.text = "Arrival Time: \(formatter.string(from: event.eventDate))"
+        driveTimeLabel.text = "Drive time: \(String(event.driveTime!/60)) min"
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {

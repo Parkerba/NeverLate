@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  NeverLateEntryViewController.swift
 //  Never Late
 //
 //  Created by parker amundsen on 7/17/19.
@@ -22,6 +22,8 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
     var refreshEvent: ((Event)->Void)?
     
     var events: [Event] = [Event]()
+    
+    weak var detailViewReference : DetailView?
     
     // MARK: Properties --------------------------------------------------------------------------------
     let buttonColor = #colorLiteral(red: 0.7802982234, green: 0.7802982234, blue: 0.7802982234, alpha: 0.7533711473) //hex: BEB490
@@ -67,9 +69,7 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
         tableView.backgroundColor = .clear
         tableView.register(EventSummaryCellTableViewCell.self, forCellReuseIdentifier: "eventCell")
         tableView.rowHeight = 90
-        tableView.layer.cornerRadius = 10
-        tableView.clipsToBounds = true
-        
+
         tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
     }()
@@ -136,6 +136,7 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
         detailViewBlurr.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         detailViewBlurr.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
         detailViewBlurr.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+        detailViewBlurr.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard)))
     }
     
     fileprivate func setDelegates() {
@@ -156,6 +157,10 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
     @objc func onAddButton() {
         // callback defined by the AppCoordinator
         addNewEntry()
+    }
+    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
     }
 }
 
@@ -231,26 +236,25 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
         return true
     }
     
-    fileprivate func displayDetailViewWithAnimation(_ vc: DetailView) {
-        var yAnchor = vc.bottomAnchor.constraint(equalTo: view.topAnchor, constant: -20)
+    fileprivate func displayDetailViewWithAnimation(_ dv: DetailView) {
+        var yAnchor = dv.bottomAnchor.constraint(equalTo: view.topAnchor, constant: -20)
         yAnchor.isActive = true
-        vc.widthAnchor.constraint(equalToConstant: view.frame.width/1.5).isActive = true
-        vc.heightAnchor.constraint(equalToConstant: view.frame.height/2).isActive = true
-        vc.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        dv.widthAnchor.constraint(equalToConstant: view.frame.width/1.5).isActive = true
+        dv.heightAnchor.constraint(equalToConstant: view.frame.height/2).isActive = true
+        dv.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         view.layoutIfNeeded()
         yAnchor.isActive = false
-        yAnchor = vc.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        yAnchor = dv.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         yAnchor.isActive = true
         UIView.animate(withDuration: 0.4) {
             self.view.layoutIfNeeded()
         }
         
-        vc.dismissAnimation = {
+        dv.dismissAnimation = {
             yAnchor.isActive = false
-            yAnchor = vc.topAnchor.constraint(equalTo: self.view.bottomAnchor)
+            yAnchor = dv.topAnchor.constraint(equalTo: self.view.bottomAnchor)
             yAnchor.isActive = true
             UIView.animate(withDuration: 0.4, animations: { self.view.layoutIfNeeded()}) { (finished: Bool) in
-                vc.removeFromSuperview()
                 self.updateEventTable()
                 self.detailViewBlurr.isHidden = true
             }
@@ -259,12 +263,15 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         detailViewBlurr.isHidden = false
-        let vc = DetailView()
-        vc.translatesAutoresizingMaskIntoConstraints = false
-        vc.setUp(event: events[indexPath.row])
-        vc.parentRef = self
-        view.addSubview(vc)
-        displayDetailViewWithAnimation(vc)
+        if let dv = detailViewReference {
+            dv.removeFromSuperview()
+        }
+        let dv = DetailView()
+        dv.translatesAutoresizingMaskIntoConstraints = false
+        dv.setUp(event: events[indexPath.row])
+        dv.parentRef = self
+        view.addSubview(dv)
+        displayDetailViewWithAnimation(dv)
     }
 
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
@@ -284,6 +291,7 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
         let openMapsAction = UIContextualAction(style: .normal, title: "Open in Maps") { [weak self] (action, view, actionPerformed) in
             AppCoordinator.openAppleMaps(event: self!.events[indexPath.row])
         }
+        
         openMapsAction.backgroundColor = .systemGreen
          
         return UISwipeActionsConfiguration(actions: [openMapsAction])
