@@ -34,9 +34,7 @@ class MapView: UIViewController, MKMapViewDelegate {
     
     private var destinationSearchBarYConstraint : NSLayoutConstraint?
 
-
-
-    
+  
     let toggleLabel: UILabel = {
         let label = UILabel()
         label.text = "Leave From Here"
@@ -246,7 +244,6 @@ class MapView: UIViewController, MKMapViewDelegate {
     
     @objc private func onDoneButton() {
         guard let sendEvent = sendEvent else {
-//            return self.dismiss(animated: true, completion: nil)
             self.navigationController?.popViewController(animated: true)
             return
         }
@@ -316,7 +313,7 @@ extension MapView: UISearchBarDelegate {
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        isUpdatingDestination = (searchBar == destinationSearchBar)
+        isUpdatingDestination = (searchBar === destinationSearchBar)
         searchCompleter.region = MKCoordinateRegion.init(center: map.centerCoordinate, latitudinalMeters: 1000, longitudinalMeters: 1000)
         searchCompleter.queryFragment = searchBar.text!
         results = searchCompleter.results

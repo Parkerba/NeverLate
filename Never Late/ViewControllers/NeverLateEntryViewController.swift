@@ -224,10 +224,34 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
         return cell
     }
     
-    
-    @objc func printLongPressed() {
-        if let row = eventTable.indexPathForSelectedRow?.row {
-            AppCoordinator.openAppleMaps(event: events[row])
+    // Displays already instantiated DetailView by animating change of y constraint
+    // this method is called when a user taps on an event cell
+    fileprivate func displayAndDefineDetailViewDismissAnimation(_ dv: DetailView) {
+        // Move to just above user's view
+        var yAnchor = dv.bottomAnchor.constraint(equalTo: view.topAnchor, constant: -20)
+        yAnchor.isActive = true
+        dv.widthAnchor.constraint(equalToConstant: view.frame.width/1.5).isActive = true
+        dv.heightAnchor.constraint(equalToConstant: view.frame.height/2).isActive = true
+        dv.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        view.layoutIfNeeded()
+        
+        // Move to the middle of the user's view (animated)
+        yAnchor.isActive = false
+        yAnchor = dv.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        yAnchor.isActive = true
+        UIView.animate(withDuration: 0.4) {
+            self.view.layoutIfNeeded()
+        }
+           
+        // Define DetailView's DismissAnimation
+        dv.dismissAnimation = { [weak self] in
+            yAnchor.isActive = false
+            yAnchor = dv.topAnchor.constraint(equalTo: (self!.view.bottomAnchor))
+            yAnchor.isActive = true
+            UIView.animate(withDuration: 0.4, animations: { self!.view.layoutIfNeeded()}) { (finished: Bool) in
+                self!.updateEventTable()
+                self!.detailViewBlurr.isHidden = true
+            }
         }
     }
     
@@ -236,46 +260,29 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
         return true
     }
     
-    fileprivate func displayDetailViewWithAnimation(_ dv: DetailView) {
-        var yAnchor = dv.bottomAnchor.constraint(equalTo: view.topAnchor, constant: -20)
-        yAnchor.isActive = true
-        dv.widthAnchor.constraint(equalToConstant: view.frame.width/1.5).isActive = true
-        dv.heightAnchor.constraint(equalToConstant: view.frame.height/2).isActive = true
-        dv.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        view.layoutIfNeeded()
-        yAnchor.isActive = false
-        yAnchor = dv.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-        yAnchor.isActive = true
-        UIView.animate(withDuration: 0.4) {
-            self.view.layoutIfNeeded()
-        }
-        
-        dv.dismissAnimation = {
-            yAnchor.isActive = false
-            yAnchor = dv.topAnchor.constraint(equalTo: self.view.bottomAnchor)
-            yAnchor.isActive = true
-            UIView.animate(withDuration: 0.4, animations: { self.view.layoutIfNeeded()}) { (finished: Bool) in
-                self.updateEventTable()
-                self.detailViewBlurr.isHidden = true
-            }
-        }
-    }
-    
+    // Display the Detail view with animation
+    // Define DetailView with event information, Define DetailView's dismiss animation.
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // blur background
         detailViewBlurr.isHidden = false
+        
+        // remove previous DetailView if present to avoid excess memory usage
         if let dv = detailViewReference {
             dv.removeFromSuperview()
         }
+
         let dv = DetailView()
         dv.translatesAutoresizingMaskIntoConstraints = false
         dv.setUp(event: events[indexPath.row])
         dv.parentRef = self
         view.addSubview(dv)
-        displayDetailViewWithAnimation(dv)
+        displayAndDefineDetailViewDismissAnimation(dv)
     }
 
+    // This provides swipe left to delete functionality for each of the event cells
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let deleteAction = UIContextualAction(style: .normal, title: "Delete") { [weak self] (action, view, actionPerformed) in
+        
+        let deleteAction = UIContextualAction(style: .normal, title: "Delete") { [weak self] _,_,_ in
             AppCoordinator.deleteEvent(event: self!.events[indexPath.row])
             AppCoordinator.removeEventNotifications(event: self!.events[indexPath.row])
             self!.events.remove(at: indexPath.row)
@@ -283,17 +290,19 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
             tableView.deleteRows(at: [indexPath], with: .automatic)
             tableView.endUpdates()
         }
+        
         deleteAction.backgroundColor = .red
         return UISwipeActionsConfiguration(actions: [deleteAction])
     }
-     
+    
+    // This provides swipe right to open in maps functionality for each of the event cells
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let openMapsAction = UIContextualAction(style: .normal, title: "Open in Maps") { [weak self] (action, view, actionPerformed) in
+        
+        let openMapsAction = UIContextualAction(style: .normal, title: "Open in Maps") { [weak self] _,_,_  in
             AppCoordinator.openAppleMaps(event: self!.events[indexPath.row])
         }
         
         openMapsAction.backgroundColor = .systemGreen
-         
         return UISwipeActionsConfiguration(actions: [openMapsAction])
     }
 }

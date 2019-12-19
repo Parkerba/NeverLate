@@ -123,7 +123,6 @@ final class GoogleRequest {
                 if let rows =  jsonObject["rows"] as? Array<Dictionary<String, Any>> {
                   
                     if (rows.count == 0) {
-                        
                         // Invalid request notify the user
                         DispatchQueue.main.async {
                             let invalidRequest = Notification.Name("invalidRequest")

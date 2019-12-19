@@ -34,13 +34,13 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
     var displayMap : (() -> Void)!
     
     // colors used
-    
     let mainBackgroundColor = #colorLiteral(red: 0.9411764706, green: 0.9725490196, blue: 0.9960784314, alpha: 1)
+    
     let buttonColor = #colorLiteral(red: 0.7450980392, green: 0.7058823529, blue: 0.5647058824, alpha: 1) //BEB490 other complementary colors: E3DCC1,FFFBEE,746943
     
     // UILabel at the top of the view
     let neverLateLabel : UILabel = {
-        let label : UILabel = UILabel()
+        let label = UILabel()
         label.text = "NeverLate"
         let labelFont: UIFont = UIFont(name: "Copperplate-Bold", size: 30)!
         label.font = labelFont
@@ -96,7 +96,7 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
         return field
     }()
     
-    let addLocationButton: UIButton = {
+    let addLocationButton : UIButton = {
         let button = UIButton()
         button.setTitle("Add Location", for: .normal)
         button.addTarget(self, action: #selector(onAddLocationButton) , for: .touchUpInside)
@@ -119,7 +119,7 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
         return datePickerView
     }()
     
-    let doneButton: UIButton = {
+    let doneButton : UIButton = {
         let button = UIButton()
         button.setTitle("Done", for: .normal)
         button.titleLabel?.font = UIFont(name: "Copperplate-Bold", size: 25)!
@@ -130,7 +130,7 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
         return button
     }()
     
-    let reminderTimePickerLabel: UILabel = {
+    let reminderTimePickerLabel : UILabel = {
         let label = UILabel()
         label.text = "ALERT: "
         label.font = UIFont(name: "Copperplate-Bold", size: 20)!
@@ -150,7 +150,7 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
         return stack
     }()
     
-    let hourButton: UIButton = {
+    let hourButton : UIButton = {
         let button = UIButton()
         button.setTitle("1 hour", for: .normal)
         button.backgroundColor = .lightGray
@@ -161,7 +161,7 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
         return button
     }()
     
-    let halfHourButton: UIButton = {
+    let halfHourButton : UIButton = {
         let button = UIButton()
         button.setTitle("30 min", for: .normal)
         button.backgroundColor = .lightGray
@@ -172,7 +172,7 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
         return button
     }()
     
-    let quarterHourButton: UIButton = {
+    let quarterHourButton : UIButton = {
         let button = UIButton()
         button.setTitle("15 min", for: .normal)
         button.backgroundColor = .lightGray
@@ -264,7 +264,6 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
         
         datePicker.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         datePicker.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
-
     }
     
     

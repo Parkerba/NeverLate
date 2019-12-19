@@ -13,7 +13,6 @@ import MapKit
 
 struct Event: Codable {
     
-    
     var title: String
        
     var currentLatitude: Double?
