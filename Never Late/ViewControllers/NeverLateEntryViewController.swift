@@ -79,6 +79,7 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
         blurrView.layer.opacity = 0.4
         blurrView.backgroundColor = .lightGray
         blurrView.isHidden = true
+        
         blurrView.translatesAutoresizingMaskIntoConstraints = false
         return blurrView
     }()
