@@ -9,6 +9,9 @@
 import Foundation
 import UIKit
 import CoreLocation
+import MapKit
+import AudioToolbox
+
 
 class DetailView: UIView, UITextFieldDelegate {
     
@@ -114,6 +117,15 @@ class DetailView: UIView, UITextFieldDelegate {
         return button
     }()
     
+    var routeMap : MKMapView  = {
+        let map = MKMapView()
+        map.translatesAutoresizingMaskIntoConstraints = false
+        map.layer.cornerRadius = 3
+        map.showsUserLocation = true
+        map.isUserInteractionEnabled = false
+        return map
+    }()
+    
     fileprivate func customizeAppearance() {
         layer.cornerRadius = 10
         clipsToBounds = true
@@ -132,6 +144,7 @@ class DetailView: UIView, UITextFieldDelegate {
         addSubview(driveTimeLabel)
         addSubview(dismissBackground)
         addSubview(dismissButton)
+        addSubview(routeMap)
     }
     
     // formats the textfields
@@ -194,6 +207,11 @@ class DetailView: UIView, UITextFieldDelegate {
         dismissBackground.trailingAnchor.constraint(equalTo: self.trailingAnchor).isActive = true
         dismissBackground.topAnchor.constraint(equalTo: dismissButton.topAnchor).isActive = true
         dismissBackground.bottomAnchor.constraint(equalTo: self.bottomAnchor).isActive = true
+        
+        routeMap.bottomAnchor.constraint(equalTo: self.dismissButton.topAnchor, constant: -5).isActive = true
+        routeMap.topAnchor.constraint(equalTo: self.arrivalTimeLabel.bottomAnchor, constant: 5).isActive = true
+        routeMap.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 5).isActive = true
+        routeMap.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -5).isActive = true
 
     }
     
@@ -210,10 +228,14 @@ class DetailView: UIView, UITextFieldDelegate {
         setConstraints()
         self.event = event
         setLabels()
+        routeMap.delegate = self
+        self.addGestureRecognizer(UILongPressGestureRecognizer(target: self, action: #selector(openMaps)))
+        showMaproute()
     }
     
     @objc func dismiss() {
         dismissAnimation()
+        dismissKeyboard()
     }
     
     @objc func saveUpdate() {
@@ -225,6 +247,12 @@ class DetailView: UIView, UITextFieldDelegate {
     
     @objc func dismissKeyboard() {
         self.endEditing(true)
+
+    }
+    
+    @objc func openMaps() {
+        AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
+        AppCoordinator.openAppleMaps(event: event)
     }
     
     // This gives the user the option to refresh the drive time information by presenting an alert view controller
@@ -261,14 +289,73 @@ class DetailView: UIView, UITextFieldDelegate {
         let formatter = DateFormatter()
         formatter.dateFormat = "h:mm a"
         formatter.timeZone = .autoupdatingCurrent
-        departureTimeLabel.text = "Departure Time: \(formatter.string(from: event.departureTime!))"
+        if let departureTime = event.departureTime {
+            departureTimeLabel.text = "Departure Time: \(formatter.string(from: departureTime))"
+            driveTimeLabel.text = "Drive time: \(String(event.driveTime!/60)) min"
+        } else {
+            departureTimeLabel.text = "Departure Time: N/A"
+            driveTimeLabel.text = "Drive time: N/A"
+        }
         arrivalTimeLabel.text = "Arrival Time: \(formatter.string(from: event.eventDate))"
-        driveTimeLabel.text = "Drive time: \(String(event.driveTime!/60)) min"
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         dismissKeyboard()
         return true
+    }
+    
+    private func showMaproute() {
+        let directionRequest = MKDirections.Request()
+
+        let locationManager = CLLocationManager()
+        
+        if let location = locationManager.location?.coordinate {
+            let region = MKCoordinateRegion.init(center: location, latitudinalMeters: 2000, longitudinalMeters: 2000)
+            directionRequest.source = MKMapItem(placemark: MKPlacemark(coordinate: CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)))
+            routeMap.setRegion(region, animated: true)
+        }
+        
+        if let destinationCoordinates = (event.locationLongitude != nil) ? CLLocationCoordinate2D(latitude: event.locationLatitude!, longitude: event.locationLongitude!) : nil {
+            let annotation = MKPointAnnotation()
+            annotation.coordinate = destinationCoordinates
+            annotation.title = event.locationName ?? ""
+            routeMap.addAnnotation(annotation)
+            directionRequest.destination = MKMapItem(placemark: MKPlacemark(coordinate: destinationCoordinates))
+        } else { return }
+        
+        directionRequest.transportType = .automobile
+        
+        let directions = MKDirections(request: directionRequest)
+        
+        directions.calculate {
+            (response, error) -> Void in
+            
+            guard let response = response else {
+                if let error = error {
+                    print("Error: \(error)")
+                }
+                
+                return
+            }
+            
+            let route = response.routes[0]
+            self.routeMap.addOverlay((route.polyline), level: MKOverlayLevel.aboveRoads)
+            
+            var rect = route.polyline.boundingMapRect
+            rect.size = MKMapSize(width: rect.size.width + 100000, height: rect.size.height + 100000)
+            rect.origin = MKMapPoint(x: rect.origin.x - 50000, y: rect.origin.y - 50000)
+            
+            self.routeMap.setRegion(MKCoordinateRegion(rect), animated: true)
+        }
+    }
+}
+
+extension DetailView : MKMapViewDelegate {
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        let renderer = MKPolylineRenderer(overlay: overlay)
+        renderer.strokeColor = .systemBlue
+        renderer.lineWidth = 2
+        return renderer
     }
 }
 

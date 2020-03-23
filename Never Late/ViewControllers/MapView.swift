@@ -29,7 +29,7 @@ class MapView: UIViewController, MKMapViewDelegate {
     var startingLocation: CLLocationCoordinate2D?
     
     var destinationLocation: MKPlacemark?
-    
+        
     private var isUpdatingDestination: Bool?
     
     private var destinationSearchBarYConstraint : NSLayoutConstraint?
@@ -281,7 +281,7 @@ extension MapView: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         view.endEditing(true)
         if (response == nil || response!.count == 0) {
-            let invalidAddress = UIAlertController(title: "Invalid Location", message: "The location you searched for cannot be found please try again", preferredStyle: .alert)
+            let invalidAddress = UIAlertController(title: "Invalid Location", message: "The location you searched for cannot be found, please try again.", preferredStyle: .alert)
             invalidAddress.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
             self.present(invalidAddress, animated: true, completion: nil)
         }
@@ -298,12 +298,13 @@ extension MapView: UISearchBarDelegate {
                     self.searchSuggestion.isHidden = true
                     return
                 }
-                if (searchBar == self.startingLocationSearchBar) {
+                if (searchBar === self.startingLocationSearchBar) {
                     self.startingLocation = response.mapItems[0].placemark.coordinate
                 }
                 self.map.removeAnnotations(self.map.annotations)
                 for item in response.mapItems {
-                    self.map.addAnnotation(item.placemark)
+                    let annotation = MapViewAnnotation(title: "\(item.name ?? ""), \(item.placemark.locality ?? "")", subtitle: item.placemark.title ?? "", coordinate: item.placemark.coordinate, placemark: item.placemark)
+                    self.map.addAnnotation(annotation)
                 }
                 self.map.showAnnotations(self.map.annotations, animated: true)
                 self.centerViewOnPlaceMarker(placeMarker: response.mapItems[0].placemark)
@@ -417,16 +418,24 @@ extension MapView: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let name = response?[indexPath.row].name
+        let address = response?[indexPath.row].placemark.title ?? response?[indexPath.row].placemark.name ?? destinationSearchBar.text
         
         if (isUpdatingDestination!) {
-            destinationSearchBar.text = response?[indexPath.row].placemark.title ?? response?[indexPath.row].placemark.name ?? destinationSearchBar.text
+            destinationSearchBar.text = "\(name ?? "") \(address ?? "")"
+            searchBarSearchButtonClicked(destinationSearchBar)
         } else {
-            startingLocationSearchBar.text = response?[indexPath.row].placemark.title ?? response?[indexPath.row].placemark.name ?? startingLocationSearchBar.text
+            startingLocationSearchBar.text = "\(name ?? "") \(address ?? "")"
+            searchBarSearchButtonClicked(startingLocationSearchBar)
         }
     }
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        guard let placeMarker = view.annotation as? MKPlacemark else { return }
+        view.canShowCallout = true
+        view.leftCalloutAccessoryView = UIView()
+        view.leftCalloutAccessoryView?.frame = CGRect(origin: view.center, size: CGSize(width: 10, height: 10))
+        let myAnnotation = view.annotation as! MapViewAnnotation
+        let placeMarker = myAnnotation.placemark
         self.centerViewOnPlaceMarker(placeMarker: placeMarker)
         if (isUpdatingDestination!) {
             self.destinationLocation = placeMarker
