@@ -15,7 +15,6 @@ class EventSummaryCellTableViewCell: UITableViewCell {
     
     var containerView : UIView = {
         let view = UIView()
-        
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -33,12 +32,11 @@ class EventSummaryCellTableViewCell: UITableViewCell {
     }
     
     func configureLabels() {
-        
         containerView.leadingAnchor.constraint(equalTo: self.leadingAnchor).isActive = true
         containerView.trailingAnchor.constraint(equalTo: self.trailingAnchor).isActive = true
         containerView.topAnchor.constraint(equalTo: self.topAnchor).isActive = true
         containerView.bottomAnchor.constraint(equalTo: self.bottomAnchor).isActive = true
-
+        
         
         mainTitleLabel.layer.cornerRadius = 10
         mainTitleLabel.numberOfLines = 4
@@ -79,7 +77,6 @@ class EventSummaryCellTableViewCell: UITableViewCell {
         }
     }
     
-    
     private func setDriveTimeLabel() {
         let formatter = DateFormatter()
         formatter.dateFormat = "h:mm a"
@@ -94,11 +91,10 @@ class EventSummaryCellTableViewCell: UITableViewCell {
         driveTimeLabel.text = "\(event!.driveTime!/60) min\n\(timeToLeave)"
         self.driveTimeLabel.isHidden = false
     }
-
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -106,10 +102,8 @@ class EventSummaryCellTableViewCell: UITableViewCell {
         self.clipsToBounds = true
         // Initialization code
     }
-
+    
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
     }
-    
-    
 }

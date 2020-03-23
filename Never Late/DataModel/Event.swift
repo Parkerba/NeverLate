@@ -14,10 +14,10 @@ import MapKit
 struct Event: Codable {
     
     var title: String
-       
+    
     var currentLatitude: Double?
     var currentLongitude: Double?
-       
+    
     var locationLatitude: Double?
     var locationLongitude: Double?
     var locationName: String?
@@ -36,7 +36,7 @@ struct Event: Codable {
         
         locationLatitude = eventLocation?.coordinate.latitude
         locationLongitude = eventLocation?.coordinate.longitude
-       
+        
         eventIdentifier = UUID()
     }
     
@@ -51,12 +51,12 @@ struct Event: Codable {
         
         locationLatitude = eventLocation?.coordinate.latitude
         locationLongitude = eventLocation?.coordinate.longitude
-       
+        
         eventIdentifier = UUID()
     }
-
+    
     //------------------------------------------------------------------------------
-
+    
     func saveEvent() {
         EventManager.save(object: self, with: eventIdentifier.uuidString)
     }

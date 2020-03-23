@@ -12,8 +12,13 @@ import CoreLocation
 import MapKit
 import AudioToolbox
 
-
+// This is a custom view to show the information related to an
+// event to the user. This also allows the user to edit the
+// event and update relevant stored information and scheduled
+// notifications.
 class DetailView: UIView, UITextFieldDelegate {
+    
+    // MARK: Properties --------------------------------------------------------------------------------
     
     var event: Event!
     
@@ -30,8 +35,8 @@ class DetailView: UIView, UITextFieldDelegate {
         field.translatesAutoresizingMaskIntoConstraints = false
         return field
     }()
-       
-       //Line separating the textfield
+    
+    //Line separating the textfield
     let dividerView : UIView = {
         let retView = UIView()
         retView.backgroundColor = .lightGray
@@ -39,8 +44,8 @@ class DetailView: UIView, UITextFieldDelegate {
         retView.translatesAutoresizingMaskIntoConstraints = false
         return retView
     }()
-       
-       //Line separating the textfield
+    
+    //Line separating the textfield
     let secondDividerView : UIView = {
         let retView = UIView()
         retView.backgroundColor = .lightGray
@@ -48,13 +53,13 @@ class DetailView: UIView, UITextFieldDelegate {
         retView.translatesAutoresizingMaskIntoConstraints = false
         return retView
     }()
-       
+    
     let descriptionText : UITextField = {
         let field = UITextField()
         field.font = UIFont(name: "Copperplate-Bold", size: 20)!
         field.placeholder = "Description"
         field.adjustsFontSizeToFitWidth = true
-           
+        
         field.translatesAutoresizingMaskIntoConstraints = false
         return field
     }()
@@ -82,7 +87,7 @@ class DetailView: UIView, UITextFieldDelegate {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-        
+    
     var dismissButton : UIButton = {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -104,16 +109,16 @@ class DetailView: UIView, UITextFieldDelegate {
         button.setBackgroundImage(#imageLiteral(resourceName: "refreshIcon"), for: .normal)
         button.addTarget(self, action: #selector(refresh), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
-
+        
         return button
-      }()
+    }()
     
     var saveButton : UIButton = {
         let button = UIButton()
         button.setBackgroundImage(#imageLiteral(resourceName: "saveIcon"), for: .normal)
         button.addTarget(self, action: #selector(saveUpdate), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
-
+        
         return button
     }()
     
@@ -126,13 +131,15 @@ class DetailView: UIView, UITextFieldDelegate {
         return map
     }()
     
-    fileprivate func customizeAppearance() {
+    private func customizeAppearance() {
         layer.cornerRadius = 10
         clipsToBounds = true
         self.backgroundColor = .white
     }
     
-    fileprivate func addSubviews() {
+    // MARK: Lifecycle --------------------------------------------------------------------------------
+    
+    private func addSubviews() {
         addSubview(titleText)
         addSubview(refreshButton)
         addSubview(saveButton)
@@ -148,7 +155,7 @@ class DetailView: UIView, UITextFieldDelegate {
     }
     
     // formats the textfields
-    fileprivate func setTextFields(_ event: Event) {
+    private func setTextFields(_ event: Event) {
         titleText.text = event.title
         titleText.font = UIFont(name: "Copperplate-Bold", size: 20)!
         titleText.translatesAutoresizingMaskIntoConstraints = false
@@ -161,7 +168,7 @@ class DetailView: UIView, UITextFieldDelegate {
     }
     
     // Sets the constraints of properties
-    fileprivate func setConstraints() {
+    private func setConstraints() {
         
         titleText.topAnchor.constraint(equalTo: saveButton.bottomAnchor, constant: 10).isActive = true
         titleText.leadingAnchor.constraint(equalTo: self.leadingAnchor).isActive = true
@@ -186,10 +193,10 @@ class DetailView: UIView, UITextFieldDelegate {
         
         departureTimeLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 5).isActive = true
         departureTimeLabel.topAnchor.constraint(equalTo: driveTimeLabel.bottomAnchor, constant: 5).isActive = true
-
+        
         arrivalTimeLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 5).isActive = true
         arrivalTimeLabel.topAnchor.constraint(equalTo: departureTimeLabel.bottomAnchor, constant: 5).isActive = true
-
+        
         refreshButton.topAnchor.constraint(equalTo: self.topAnchor, constant: 5).isActive = true
         refreshButton.widthAnchor.constraint(equalToConstant: 40).isActive = true
         refreshButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
@@ -212,7 +219,7 @@ class DetailView: UIView, UITextFieldDelegate {
         routeMap.topAnchor.constraint(equalTo: self.arrivalTimeLabel.bottomAnchor, constant: 5).isActive = true
         routeMap.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 5).isActive = true
         routeMap.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -5).isActive = true
-
+        
     }
     
     // Sets the constraints, text and gesture recognizers of the properties.
@@ -233,6 +240,23 @@ class DetailView: UIView, UITextFieldDelegate {
         showMaproute()
     }
     
+    
+    // Sets the text of the labels
+    func setLabels() {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        formatter.timeZone = .autoupdatingCurrent
+        if let departureTime = event.departureTime {
+            departureTimeLabel.text = "Departure Time: \(formatter.string(from: departureTime))"
+            driveTimeLabel.text = "Drive time: \(String(event.driveTime!/60)) min"
+        } else {
+            departureTimeLabel.text = "Departure Time: N/A"
+            driveTimeLabel.text = "Drive time: N/A"
+        }
+        arrivalTimeLabel.text = "Arrival Time: \(formatter.string(from: event.eventDate))"
+    }
+    // MARK: Actions --------------------------------------------------------------------------------
+    
     @objc func dismiss() {
         dismissAnimation()
         dismissKeyboard()
@@ -247,7 +271,7 @@ class DetailView: UIView, UITextFieldDelegate {
     
     @objc func dismissKeyboard() {
         self.endEditing(true)
-
+        
     }
     
     @objc func openMaps() {
@@ -257,8 +281,6 @@ class DetailView: UIView, UITextFieldDelegate {
     
     // This gives the user the option to refresh the drive time information by presenting an alert view controller
     @objc func refresh() {
-        
-        
         let userRefreshPreference = UIAlertController(title: "Refresh", message: "Would you like to update the starting location to your current location or use the previously set starting location?", preferredStyle: .alert)
         
         // Grabs users current location and uses this as the starting location.
@@ -284,29 +306,26 @@ class DetailView: UIView, UITextFieldDelegate {
         parentRef?.present(userRefreshPreference, animated: true, completion: nil)
     }
     
-    // Sets the text of the labels
-    func setLabels() {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "h:mm a"
-        formatter.timeZone = .autoupdatingCurrent
-        if let departureTime = event.departureTime {
-            departureTimeLabel.text = "Departure Time: \(formatter.string(from: departureTime))"
-            driveTimeLabel.text = "Drive time: \(String(event.driveTime!/60)) min"
-        } else {
-            departureTimeLabel.text = "Departure Time: N/A"
-            driveTimeLabel.text = "Drive time: N/A"
-        }
-        arrivalTimeLabel.text = "Arrival Time: \(formatter.string(from: event.eventDate))"
-    }
+    
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         dismissKeyboard()
         return true
     }
     
+    
+}
+// MARK: MapView functionality ------------------------------------------------------------------
+extension DetailView : MKMapViewDelegate {
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        let renderer = MKPolylineRenderer(overlay: overlay)
+        renderer.strokeColor = .systemBlue
+        renderer.lineWidth = 2
+        return renderer
+    }
+    
     private func showMaproute() {
         let directionRequest = MKDirections.Request()
-
         let locationManager = CLLocationManager()
         
         if let location = locationManager.location?.coordinate {
@@ -334,7 +353,6 @@ class DetailView: UIView, UITextFieldDelegate {
                 if let error = error {
                     print("Error: \(error)")
                 }
-                
                 return
             }
             
@@ -347,15 +365,6 @@ class DetailView: UIView, UITextFieldDelegate {
             
             self.routeMap.setRegion(MKCoordinateRegion(rect), animated: true)
         }
-    }
-}
-
-extension DetailView : MKMapViewDelegate {
-    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
-        let renderer = MKPolylineRenderer(overlay: overlay)
-        renderer.strokeColor = .systemBlue
-        renderer.lineWidth = 2
-        return renderer
     }
 }
 

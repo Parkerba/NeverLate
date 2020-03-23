@@ -7,7 +7,8 @@
 //
 
 import MapKit
-
+// This is a custom class to allow setting of the annotation titles and storing of related placemark
+// in the MapView.
 class MapViewAnnotation: NSObject, MKAnnotation {
     let title: String?
     let coordinate: CLLocationCoordinate2D

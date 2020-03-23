@@ -17,11 +17,11 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
     
     var updateEventTable: (()->Void)!
     
-    var openAppleMaps: (()->Void)?
+    var openAppleMaps: (()->Void)!
     
-    var refreshEvent: ((Event)->Void)?
+    var refreshEvent: ((Event)->Void)!
     
-    var events: [Event] = [Event]()
+    var events = [Event]()
     
     weak var detailViewReference : DetailView?
     
@@ -40,7 +40,7 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-
+    
     // button to present the VC to create new events
     let addButton: UIButton = {
         let button = UIButton()
@@ -69,7 +69,7 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
         tableView.backgroundColor = .clear
         tableView.register(EventSummaryCellTableViewCell.self, forCellReuseIdentifier: "eventCell")
         tableView.rowHeight = 90
-
+        
         tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
     }()
@@ -98,9 +98,6 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
         AppCoordinator.requestNotificationPermission(requestView: self)
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        openAppleMaps?()
-    }
     
     private func addSubviews() {
         view.addSubview(neverLateLabel)
@@ -111,7 +108,7 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
     }
     
     // sets up the Constraints to all the subviews in the view controller
-    fileprivate func addConstraints() {
+    private func addConstraints() {
         // app name label constraints
         neverLateLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 10).isActive = true
         neverLateLabel.heightAnchor.constraint(equalToConstant: view.frame.height/7).isActive = true
@@ -140,20 +137,17 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
         detailViewBlurr.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard)))
     }
     
-    fileprivate func setDelegates() {
+    private func setDelegates() {
         eventTable.delegate = self
         eventTable.dataSource = self
     }
     
-    func setUpUI() {
+    private func setUpUI() {
         addConstraints()
         setDelegates()
     }
     
     // MARK: Actions  --------------------------------------------------------------------------------
-    @objc func onSettingsButton() {
-        print("Moving to the settings view")
-    }
     // Presents the addNewViewController where the user can add new events
     @objc func onAddButton() {
         // callback defined by the AppCoordinator
@@ -195,8 +189,8 @@ extension NeverLateEntryViewController {
     }
     
     func addNotificationObservers() {
-        let reloadEvents = Notification.Name(rawValue: "reloadEvents")
-        NotificationCenter.default.addObserver(self, selector: #selector(reloadTableData), name: reloadEvents, object: nil)
+        let reloadevents = Notification.Name(rawValue: "reloadEvents")
+        NotificationCenter.default.addObserver(self, selector: #selector(reloadTableData), name: reloadevents, object: nil)
         
         let invalidRequest = Notification.Name(rawValue: "invalidRequest")
         NotificationCenter.default.addObserver(self, selector: #selector(invalidRequestPresentError), name: invalidRequest, object: nil)
@@ -212,7 +206,7 @@ extension NeverLateEntryViewController {
     }
 }
 
-// MARK: TableView Functionality --------------------------------------------------------------------------------
+// MARK: TableView/DetailView Functionality --------------------------------------------------------------------------------
 extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return events.count
@@ -223,37 +217,6 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
         cell.set(passedEvent: events[indexPath.row])
         cell.selectionStyle = .blue
         return cell
-    }
-    
-    // Displays already instantiated DetailView by animating change of y constraint
-    // this method is called when a user taps on an event cell
-    fileprivate func displayAndDefineDetailViewDismissAnimation(_ dv: DetailView) {
-        // Move to just above user's view
-        var yAnchor = dv.bottomAnchor.constraint(equalTo: view.topAnchor, constant: -20)
-        yAnchor.isActive = true
-        dv.widthAnchor.constraint(equalToConstant: view.frame.width/1.5).isActive = true
-        dv.heightAnchor.constraint(equalToConstant: view.frame.height/2).isActive = true
-        dv.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        view.layoutIfNeeded()
-        
-        // Move to the middle of the user's view (animated)
-        yAnchor.isActive = false
-        yAnchor = dv.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-        yAnchor.isActive = true
-        UIView.animate(withDuration: 0.4) {
-            self.view.layoutIfNeeded()
-        }
-           
-        // Define DetailView's DismissAnimation
-        dv.dismissAnimation = { [weak self] in
-            yAnchor.isActive = false
-            yAnchor = dv.topAnchor.constraint(equalTo: (self!.view.bottomAnchor))
-            yAnchor.isActive = true
-            UIView.animate(withDuration: 0.4, animations: { self!.view.layoutIfNeeded()}) { (finished: Bool) in
-                self!.updateEventTable()
-                self!.detailViewBlurr.isHidden = true
-            }
-        }
     }
     
     // Gives ability to edit the event table
@@ -271,7 +234,7 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
         if let dv = detailViewReference {
             dv.removeFromSuperview()
         }
-
+        
         let dv = DetailView()
         dv.translatesAutoresizingMaskIntoConstraints = false
         dv.setUp(event: events[indexPath.row])
@@ -279,7 +242,8 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
         view.addSubview(dv)
         displayAndDefineDetailViewDismissAnimation(dv)
     }
-
+    
+    
     // This provides swipe left to delete functionality for each of the event cells
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
@@ -305,5 +269,37 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
         
         openMapsAction.backgroundColor = .systemGreen
         return UISwipeActionsConfiguration(actions: [openMapsAction])
+    }
+    
+    
+    // Displays already instantiated DetailView by animating change of y constraint
+    // this method is called when a user taps on an event cell
+    private func displayAndDefineDetailViewDismissAnimation(_ dv: DetailView) {
+        // Move to just above user's view
+        var yAnchor = dv.bottomAnchor.constraint(equalTo: view.topAnchor, constant: -20)
+        yAnchor.isActive = true
+        dv.widthAnchor.constraint(equalToConstant: view.frame.width/1.5).isActive = true
+        dv.heightAnchor.constraint(equalToConstant: view.frame.height/2).isActive = true
+        dv.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        view.layoutIfNeeded()
+        
+        // Move to the middle of the user's view (animated)
+        yAnchor.isActive = false
+        yAnchor = dv.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        yAnchor.isActive = true
+        UIView.animate(withDuration: 0.4) {
+            self.view.layoutIfNeeded()
+        }
+        
+        // Define DetailView's DismissAnimation
+        dv.dismissAnimation = { [weak self] in
+            yAnchor.isActive = false
+            yAnchor = dv.topAnchor.constraint(equalTo: (self!.view.bottomAnchor))
+            yAnchor.isActive = true
+            UIView.animate(withDuration: 0.4, animations: { self!.view.layoutIfNeeded()}) { (finished: Bool) in
+                self!.updateEventTable()
+                self!.detailViewBlurr.isHidden = true
+            }
+        }
     }
 }

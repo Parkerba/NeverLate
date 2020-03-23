@@ -104,7 +104,6 @@ final class AppCoordinator: NSObject, EventReciever {
         }
     }
     
-
     // MARK: Notification logic --------------------------------------------------------------------------------
     static func requestNotificationPermission(requestView: UIViewController) {
         let notificationCenter = UNUserNotificationCenter.current()
@@ -119,36 +118,35 @@ final class AppCoordinator: NSObject, EventReciever {
                 requestView.present(alert, animated: true, completion: nil)
             }
         })
-      }
-      
-      // This will schedule a notification for the time of the event
-      #warning("Check for location when creating notification action/abstract further")
+    }
+    
+    // This will schedule a notification for the time of the event
+    #warning("Check for location when creating notification action/abstract further")
     static public func addNotification(event: Event) {
         UNUserNotificationCenter.current().delegate = NotificationComponent.notificationCoordinator
         var reminderName = ""
         if (event.locationName != nil) {
             reminderName = ", you need to be at \(event.locationName!)"
         }
-          
+        
         // Setting up the content of the notification
         let content = UNMutableNotificationContent()
         content.body = "\(event.title)\nTime to leave\(reminderName)\n\(event.eventDescription)"
         content.sound = UNNotificationSound.defaultCriticalSound(withAudioVolume: 1)
         content.categoryIdentifier = "notificationAction"
         
-          
+        
         let openWithMapsAction = UNNotificationAction(identifier: "openWithMaps", title: "Open in Maps", options: [.foreground])
         let category = UNNotificationCategory(identifier: "notificationAction", actions: [openWithMapsAction], intentIdentifiers: [], options: [])
-          
         UNUserNotificationCenter.current().setNotificationCategories([category])
-          
-          
+        
+        
         let dateComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: event.departureTime ?? event.eventDate)
-          
+        
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
-          
+        
         let request = UNNotificationRequest(identifier: event.eventIdentifier.uuidString, content: content, trigger: trigger)
-          
+        
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print ("Failed to add notification: \(error.localizedDescription)")
@@ -174,21 +172,20 @@ final class AppCoordinator: NSObject, EventReciever {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [event.eventIdentifier.uuidString])
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [event.eventIdentifier.uuidString])
     }
-
     
     static func openAppleMaps(event: Event) {
         guard let lat = event.locationLatitude else {
             return
         }
-               
+        
         guard let long = event.locationLongitude else {
             return
         }
-               
+        
         guard let name = event.locationName else {
             return
         }
-               
+        
         let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: long)
         let placemark = MKPlacemark(coordinate: coordinate)
         let mapItem = MKMapItem(placemark: placemark)

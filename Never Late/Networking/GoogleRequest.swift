@@ -38,7 +38,7 @@ final class GoogleRequest {
             else {return nil}
         
         let departureTimeInSeconds : Int = Int(event.departureTime?.timeIntervalSince1970 ?? event.eventDate.timeIntervalSince1970)
-        let apiKey = "YourAPiKey"
+        let apiKey = "AIzaSyAM3BisgpO8_GzRxJVqEqX-4AhWZrL9nek"
         
         let returnUrl: String = "\(basePath)\(currentLatitude),\(currentLongitude)&destinations=\(destLatitudeComponent),\(destLongitudeComponent)&departure_time=\(departureTimeInSeconds)&traffic_model=best_guess&key=\(apiKey)"
         return URL(string: returnUrl)
@@ -76,7 +76,7 @@ final class GoogleRequest {
             }
         }.resume()
     }
-
+    
     
     // returns the number of seconds that the departure time is off by, used to improve the departure time prediction for the next api call.
     static private func getAccuracy(event: Event) -> Int? {
@@ -93,7 +93,7 @@ final class GoogleRequest {
             performRequest(url: url, event: event)
             return
         }
-            finalizeEvent(event: event)
+        finalizeEvent(event: event)
     }
     
     // Called when the accuracy is determined to be sufficient or api calls exceed 5
@@ -121,7 +121,7 @@ final class GoogleRequest {
         do {
             if let jsonObject = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] {
                 if let rows =  jsonObject["rows"] as? Array<Dictionary<String, Any>> {
-                  
+                    
                     if (rows.count == 0) {
                         // Invalid request notify the user
                         DispatchQueue.main.async {
@@ -133,7 +133,7 @@ final class GoogleRequest {
                     
                     let dictObject = rows[0]
                     if let elements = dictObject["elements"] as? Array<Dictionary<String, Any>> {
-                            
+                        
                         if let distanceInfo = elements[0]["distance"] as? Dictionary<String, Any> {
                             if let distance = distanceInfo["value"] as? Int {
                                 distanceInformation.distance = distance
@@ -156,7 +156,7 @@ final class GoogleRequest {
                 }
             }
         }
-        
+            
         catch let error {
             print (error.localizedDescription)
             print ("There has been an error parsing the json")

@@ -13,8 +13,8 @@ import CoreLocation
 class MapView: UIViewController, MKMapViewDelegate {
     
     deinit {
-           print("Memory was released in mapkit. No retain cycles")
-       }
+        print("Memory was released in mapkit. No retain cycles")
+    }
     
     // MARK: Properties --------------------------------------------------------------------------------
     
@@ -29,18 +29,18 @@ class MapView: UIViewController, MKMapViewDelegate {
     var startingLocation: CLLocationCoordinate2D?
     
     var destinationLocation: MKPlacemark?
-        
+    
     private var isUpdatingDestination: Bool?
     
     private var destinationSearchBarYConstraint : NSLayoutConstraint?
-
-  
+    
+    
     let toggleLabel: UILabel = {
         let label = UILabel()
         label.text = "Leave From Here"
         label.numberOfLines = 2
         label.adjustsFontSizeToFitWidth = true
-    
+        
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -76,7 +76,7 @@ class MapView: UIViewController, MKMapViewDelegate {
         searchBar.layer.cornerRadius = 10
         searchBar.backgroundColor = .clear
         searchBar.searchBarStyle = UISearchBar.Style(rawValue: 2)!
-       
+        
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         return searchBar
     }()
@@ -88,7 +88,7 @@ class MapView: UIViewController, MKMapViewDelegate {
         backButton.layer.cornerRadius = 10
         backButton.backgroundColor = #colorLiteral(red: 0.7450980392, green: 0.7058823529, blue: 0.5647058824, alpha: 1) // BEB490
         backButton.addTarget(self, action: #selector(onBackButton), for: .touchUpInside)
-
+        
         backButton.translatesAutoresizingMaskIntoConstraints = false
         return backButton;
     }()
@@ -112,10 +112,10 @@ class MapView: UIViewController, MKMapViewDelegate {
     // locations based on the text inputted by the user
     let searchCompleter : MKLocalSearchCompleter =  {
         let completer = MKLocalSearchCompleter()
-       
+        
         return completer
     }()
-
+    
     let map: MKMapView = {
         let map = MKMapView()
         map.translatesAutoresizingMaskIntoConstraints = false
@@ -131,7 +131,7 @@ class MapView: UIViewController, MKMapViewDelegate {
         button.addTarget(self, action: #selector(onDoneButton), for: .touchUpInside)
         button.backgroundColor = #colorLiteral(red: 0.7450980392, green: 0.7058823529, blue: 0.5647058824, alpha: 1)
         button.isHidden = true
-
+        
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -199,7 +199,7 @@ class MapView: UIViewController, MKMapViewDelegate {
         searchSuggestion.widthAnchor.constraint(equalTo: destinationSearchBar.widthAnchor).isActive = true
         searchSuggestion.rowHeight = view.frame.height/10
     }
-
+    
     
     // MARK: Actions --------------------------------------------------------------------------------
     @objc private func onBackButton() {
@@ -286,7 +286,7 @@ extension MapView: UISearchBarDelegate {
             self.present(invalidAddress, animated: true, completion: nil)
         }
             
-        
+            
         else {
             let searchRequest = MKLocalSearch.Request()
             searchRequest.naturalLanguageQuery = searchBar.text ?? ""

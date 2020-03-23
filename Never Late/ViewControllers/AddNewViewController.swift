@@ -30,7 +30,7 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
     var startingLocation: CLLocationCoordinate2D?
     
     var locationManager: CLLocationManager?
-        
+    
     var displayMap : (() -> Void)!
     
     // colors used
@@ -178,7 +178,7 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
         button.backgroundColor = .lightGray
         button.addTarget(self, action: #selector(notificationModifierPressed), for: .touchUpInside)
         button.layer.cornerRadius = 10
-
+        
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -192,9 +192,7 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(textFieldShouldReturn(_:))))
         addSubviews()
         setUpUI()
-        self.navigationController?.interactivePopGestureRecognizer?.delegate = nil
-        self.eventTitleTextField.delegate = self
-        self.eventDescriptionTextField.delegate = self
+        setDelegates()
     }
     
     private func addSubviews() {
@@ -211,6 +209,11 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
         view.addSubview(reminderTimePicker)
     }
     
+    private func setDelegates() {
+        self.navigationController?.interactivePopGestureRecognizer?.delegate = nil
+        self.eventTitleTextField.delegate = self
+        self.eventDescriptionTextField.delegate = self
+    }
     
     // sets up the Constraints to all the subviews in the view controller
     private func setUpUI() {
@@ -288,7 +291,7 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
     @objc func onAddLocationButton() {
         displayMap()
     }
-
+    
     #warning("implement real logic")
     @objc func notificationModifierPressed(sender: UIButton) {
         if (sender.backgroundColor == #colorLiteral(red: 0.7450980392, green: 0.7058823529, blue: 0.5647058824, alpha: 1)) {
