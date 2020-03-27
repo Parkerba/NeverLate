@@ -8,6 +8,7 @@
 
 import UIKit
 
+// This is a custom UITableViewCell to be used in the NeverLateEntryViewController
 class EventSummaryCellTableViewCell: UITableViewCell {
     var event: Event? = nil
     var driveTimeLabel = UILabel()
@@ -82,7 +83,7 @@ class EventSummaryCellTableViewCell: UITableViewCell {
         formatter.dateFormat = "h:mm a"
         formatter.timeZone = .autoupdatingCurrent
         let timeToLeave: String = formatter.string(from: event!.departureTime!)
-        let timeUntilDeparture: Double = Double((event?.departureTime!.timeIntervalSinceNow)!)
+        let timeUntilDeparture: Double = Double((event!.departureTime!.timeIntervalSinceNow))
         if (timeUntilDeparture < 0) {
             driveTimeLabel.backgroundColor = .red
         } else if (timeUntilDeparture < 600) {

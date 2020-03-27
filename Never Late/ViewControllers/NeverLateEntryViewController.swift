@@ -247,10 +247,10 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
     // This provides swipe left to delete functionality for each of the event cells
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
-        let deleteAction = UIContextualAction(style: .normal, title: "Delete") { [weak self] _,_,_ in
-            AppCoordinator.deleteEvent(event: self!.events[indexPath.row])
-            AppCoordinator.removeEventNotifications(event: self!.events[indexPath.row])
-            self!.events.remove(at: indexPath.row)
+        let deleteAction = UIContextualAction(style: .normal, title: "Delete") { [unowned self] _,_,_ in
+            AppCoordinator.deleteEvent(event: self.events[indexPath.row])
+            AppCoordinator.removeEventNotifications(event: self.events[indexPath.row])
+            self.events.remove(at: indexPath.row)
             tableView.beginUpdates()
             tableView.deleteRows(at: [indexPath], with: .automatic)
             tableView.endUpdates()
@@ -263,8 +263,8 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
     // This provides swipe right to open in maps functionality for each of the event cells
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
-        let openMapsAction = UIContextualAction(style: .normal, title: "Open in Maps") { [weak self] _,_,_  in
-            AppCoordinator.openAppleMaps(event: self!.events[indexPath.row])
+        let openMapsAction = UIContextualAction(style: .normal, title: "Open in Maps") { [unowned self] _,_,_  in
+            AppCoordinator.openAppleMaps(event: self.events[indexPath.row])
         }
         
         openMapsAction.backgroundColor = .systemGreen
@@ -292,13 +292,13 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
         }
         
         // Define DetailView's DismissAnimation
-        dv.dismissAnimation = { [weak self] in
+        dv.dismissAnimation = { [unowned self] in
             yAnchor.isActive = false
-            yAnchor = dv.topAnchor.constraint(equalTo: (self!.view.bottomAnchor))
+            yAnchor = dv.topAnchor.constraint(equalTo: (self.view.bottomAnchor))
             yAnchor.isActive = true
-            UIView.animate(withDuration: 0.4, animations: { self!.view.layoutIfNeeded()}) { (finished: Bool) in
-                self!.updateEventTable()
-                self!.detailViewBlurr.isHidden = true
+            UIView.animate(withDuration: 0.4, animations: { self.view.layoutIfNeeded()}) { (finished: Bool) in
+                self.updateEventTable()
+                self.detailViewBlurr.isHidden = true
             }
         }
     }

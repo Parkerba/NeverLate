@@ -10,7 +10,7 @@ import Foundation
 import MapKit
 import CoreLocation
 
-class MapView: UIViewController, MKMapViewDelegate {
+class MapView: UIViewController {
     
     deinit {
         print("Memory was released in mapkit. No retain cycles")
@@ -34,6 +34,7 @@ class MapView: UIViewController, MKMapViewDelegate {
     
     private var destinationSearchBarYConstraint : NSLayoutConstraint?
     
+    private var startingAnnotation: MapViewAnnotation?
     
     let toggleLabel: UILabel = {
         let label = UILabel()
@@ -292,6 +293,7 @@ extension MapView: UISearchBarDelegate {
             searchRequest.naturalLanguageQuery = searchBar.text ?? ""
             searchRequest.region = searchCompleter.region
             let search = MKLocalSearch(request: searchRequest)
+            #warning("Usage of unowned may not be safe")
             search.start { [unowned self] response, error in
                 guard let response = response else {
                     self.map.removeAnnotations(self.map.annotations)
@@ -325,6 +327,7 @@ extension MapView: UISearchBarDelegate {
         searchRequest.region = searchCompleter.region
         
         let search = MKLocalSearch(request: searchRequest)
+        #warning("Usage of unowned may not be safe")
         search.start { [unowned self] response, error in
             guard let response = response else {
                 return
@@ -395,8 +398,88 @@ extension MapView: MKLocalSearchCompleterDelegate {
         results = completer.results
     }
 }
+
+extension MapView : MKMapViewDelegate {
+    private func showMaproute() {
+        let directionRequest = MKDirections.Request()
+        let locationManager = CLLocationManager()
+        var startOfRoute: MKPlacemark?
+        guard let endOfRoute = destinationLocation else {return}
+        startOfRoute = startingAnnotation?.placemark
+        if (startOfRoute == nil) {
+            if let location = locationManager.location?.coordinate {
+                startOfRoute = MKPlacemark(coordinate: location)
+            } else {
+                return
+            }
+        } else {
+            map.addAnnotation(startingAnnotation!)
+        }
+        directionRequest.source = MKMapItem(placemark: startOfRoute!)
+        let region = MKCoordinateRegion.init(center: startOfRoute!.coordinate, latitudinalMeters: 2000, longitudinalMeters: 2000)
+        map.setRegion(region, animated: true)
+        
+        
+        directionRequest.destination = MKMapItem(placemark: endOfRoute)
+        
+        directionRequest.transportType = .automobile
+        
+        let directions = MKDirections(request: directionRequest)
+        
+        directions.calculate {
+            (response, error) -> Void in
+            
+            guard let response = response else {
+                if let error = error {
+                    print("Error: \(error)")
+                }
+                return
+            }
+            
+            var route : MKRoute
+            route = response.routes[0]
+            self.map.removeOverlays(self.map.overlays)
+            self.map.addOverlay(route.polyline, level: MKOverlayLevel.aboveRoads)
+            
+            
+            var rect = route.polyline.boundingMapRect
+            rect.size = MKMapSize(width: rect.size.width + 100000, height: rect.size.height + 100000)
+            rect.origin = MKMapPoint(x: rect.origin.x - 50000, y: rect.origin.y - 50000)
+            
+            self.map.setRegion(MKCoordinateRegion(rect), animated: true)
+        }
+        
+    }
+    
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        let renderer = MKPolylineRenderer(overlay: overlay)
+        renderer.strokeColor = .systemBlue
+        renderer.lineWidth = 4
+        return renderer
+    }
+    
+    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+         view.canShowCallout = true
+         view.leftCalloutAccessoryView = UIView()
+         view.leftCalloutAccessoryView?.frame = CGRect(origin: view.center, size: CGSize(width: 10, height: 10))
+         let myAnnotation = view.annotation as! MapViewAnnotation
+         let placeMarker = myAnnotation.placemark
+         self.centerViewOnPlaceMarker(placeMarker: placeMarker)
+         if (isUpdatingDestination!) {
+            self.destinationLocation = placeMarker
+            showMaproute()
+            doneButtonAnimation()
+         }
+         else {
+            startingAnnotation = myAnnotation
+            startingLocation = placeMarker.coordinate
+            if destinationLocation != nil {
+                showMaproute()
+            }
+         }
+     }
+}
 // MARK: Table View --------------------------------------------------------------------------------
-#warning("Add functionality for tapping on suggestion to search")
 extension MapView: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -429,21 +512,6 @@ extension MapView: UITableViewDelegate, UITableViewDataSource {
             searchBarSearchButtonClicked(startingLocationSearchBar)
         }
     }
-    
-    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        view.canShowCallout = true
-        view.leftCalloutAccessoryView = UIView()
-        view.leftCalloutAccessoryView?.frame = CGRect(origin: view.center, size: CGSize(width: 10, height: 10))
-        let myAnnotation = view.annotation as! MapViewAnnotation
-        let placeMarker = myAnnotation.placemark
-        self.centerViewOnPlaceMarker(placeMarker: placeMarker)
-        if (isUpdatingDestination!) {
-            self.destinationLocation = placeMarker
-            doneButtonAnimation()
-        }
-        else {
-            startingLocation = placeMarker.coordinate
-        }
-    }
-    
 }
+
+

@@ -31,6 +31,7 @@ class DetailView: UIView, UITextFieldDelegate {
         field.font = UIFont(name: "Copperplate-Bold", size: 20)!
         field.placeholder = "Title"
         field.adjustsFontSizeToFitWidth = true
+        field.addTarget(self, action: #selector(textFieldValuesChanged), for: .editingChanged)
         
         field.translatesAutoresizingMaskIntoConstraints = false
         return field
@@ -59,6 +60,8 @@ class DetailView: UIView, UITextFieldDelegate {
         field.font = UIFont(name: "Copperplate-Bold", size: 20)!
         field.placeholder = "Description"
         field.adjustsFontSizeToFitWidth = true
+        field.addTarget(self, action: #selector(textFieldValuesChanged), for: .editingChanged)
+
         
         field.translatesAutoresizingMaskIntoConstraints = false
         return field
@@ -118,6 +121,7 @@ class DetailView: UIView, UITextFieldDelegate {
         button.setBackgroundImage(#imageLiteral(resourceName: "saveIcon"), for: .normal)
         button.addTarget(self, action: #selector(saveUpdate), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.layer.cornerRadius = 5
         
         return button
     }()
@@ -127,7 +131,6 @@ class DetailView: UIView, UITextFieldDelegate {
         map.translatesAutoresizingMaskIntoConstraints = false
         map.layer.cornerRadius = 3
         map.showsUserLocation = true
-        map.isUserInteractionEnabled = false
         return map
     }()
     
@@ -236,7 +239,7 @@ class DetailView: UIView, UITextFieldDelegate {
         self.event = event
         setLabels()
         routeMap.delegate = self
-        self.addGestureRecognizer(UILongPressGestureRecognizer(target: self, action: #selector(openMaps)))
+        routeMap.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(openMaps)))
         showMaproute()
     }
     
@@ -267,6 +270,13 @@ class DetailView: UIView, UITextFieldDelegate {
         event.eventDescription = descriptionText.text ?? ""
         AppCoordinator.updateEvent(event: event)
         dismissKeyboard()
+        UIView.animate(withDuration: 0.5, delay: 0, options: .curveEaseOut, animations: {
+            self.saveButton.backgroundColor = .green
+        }) { _ in
+            UIView.animate(withDuration: 0.5) {
+                self.saveButton.backgroundColor = .clear
+            }
+        }
     }
     
     @objc func dismissKeyboard() {
@@ -306,11 +316,19 @@ class DetailView: UIView, UITextFieldDelegate {
         parentRef?.present(userRefreshPreference, animated: true, completion: nil)
     }
     
-    
-    
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         dismissKeyboard()
         return true
+    }
+    
+    @objc func textFieldValuesChanged() {
+        if textChanged() {
+            saveButton.backgroundColor = #colorLiteral(red: 1, green: 0.9752991796, blue: 0, alpha: 0.3498501712)
+        }
+    }
+    
+    private func textChanged() -> Bool {
+        return !(titleText.text == event.title && descriptionText.text == event.eventDescription)
     }
     
     

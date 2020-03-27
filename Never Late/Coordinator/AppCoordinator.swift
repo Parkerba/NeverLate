@@ -4,7 +4,7 @@ import MapKit
 
 
 // MARK: Singleton notification helper to AppCoordinator, needed for delegation
-fileprivate class NotificationComponent: NSObject, UNUserNotificationCenterDelegate {
+private class NotificationComponent: NSObject, UNUserNotificationCenterDelegate {
     private override init() {
         super.init()
     }
