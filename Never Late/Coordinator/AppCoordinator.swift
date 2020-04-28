@@ -124,35 +124,75 @@ final class AppCoordinator: NSObject, EventReciever {
     #warning("Check for location when creating notification action/abstract further")
     static public func addNotification(event: Event) {
         UNUserNotificationCenter.current().delegate = NotificationComponent.notificationCoordinator
-        var reminderName = ""
-        if (event.locationName != nil) {
-            reminderName = ", you need to be at \(event.locationName!)"
-        }
+        
+        
         
         // Setting up the content of the notification
-        let content = UNMutableNotificationContent()
-        content.body = "\(event.title)\nTime to leave\(reminderName)\n\(event.eventDescription)"
-        content.sound = UNNotificationSound.defaultCriticalSound(withAudioVolume: 1)
-        content.categoryIdentifier = "notificationAction"
-        
+        let content = getNotificationContent(event: event)
         
         let openWithMapsAction = UNNotificationAction(identifier: "openWithMaps", title: "Open in Maps", options: [.foreground])
+        
         let category = UNNotificationCategory(identifier: "notificationAction", actions: [openWithMapsAction], intentIdentifiers: [], options: [])
         UNUserNotificationCenter.current().setNotificationCategories([category])
         
         
-        let dateComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: event.departureTime ?? event.eventDate)
+        let mainDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: event.departureTime ?? event.eventDate)
         
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: mainDate, repeats: false)
         
-        let request = UNNotificationRequest(identifier: event.eventIdentifier.uuidString, content: content, trigger: trigger)
+        let mainRequest = UNNotificationRequest(identifier: event.eventIdentifier.uuidString, content: content.mainNotificationContent, trigger: trigger)
         
-        UNUserNotificationCenter.current().add(request) { error in
+        if let offsetContent = content.offSetNotificationContent {
+            // submit Notification for offset notification
+            let offsetInSeconds = event.offset*60
+            let offsetDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: (event.departureTime ?? event.eventDate) - Double(offsetInSeconds))
+            
+            let offsetNotificationTrigger = UNCalendarNotificationTrigger(dateMatching: offsetDate, repeats: false)
+            
+            let offsetRequest = UNNotificationRequest(identifier: "\(event.eventIdentifier.uuidString)\(event.offset)", content: offsetContent, trigger: offsetNotificationTrigger)
+            
+            UNUserNotificationCenter.current().add(offsetRequest) { error in
+                if let error = error {
+                    print ("Failed to add notification: \(error.localizedDescription)")
+                }
+            }
+        }
+        
+        UNUserNotificationCenter.current().add(mainRequest) { error in
             if let error = error {
                 print ("Failed to add notification: \(error.localizedDescription)")
             }
         }
     }
+    
+    static private func getNotificationContent(event: Event) -> EventNotificationContent {
+        var offSetNotificationContent: UNMutableNotificationContent? = nil
+        let notificationContent = UNMutableNotificationContent()
+        notificationContent.title = event.title
+        notificationContent.sound = UNNotificationSound.defaultCriticalSound(withAudioVolume: 1)
+        if let locationName = event.locationName {
+            notificationContent.body = " \(event.title): You need to leave for \(locationName)."
+            
+        } else {
+           notificationContent.body = " \(event.title)"
+        }
+        
+        if (event.offset != 0) { // Offset exists two notifications will be made
+            offSetNotificationContent = UNMutableNotificationContent()
+            offSetNotificationContent?.title = event.title
+            offSetNotificationContent?.sound = UNNotificationSound.defaultCriticalSound(withAudioVolume: 1)
+            if let locationName = event.locationName {
+                offSetNotificationContent?.body = " \(event.title): You need to leave for \(locationName) in \(event.offset) minutes."
+                
+            } else {
+                offSetNotificationContent?.body = " \(event.title): \(event.offset) minutes."
+            }
+        }
+        
+        return EventNotificationContent(offSetNotificationContent: offSetNotificationContent, mainNotificationContent: notificationContent)
+    }
+    
+    
     
     static func deleteEvent(event: Event) {
         EventManager.delete(event.eventIdentifier.uuidString)
@@ -169,8 +209,9 @@ final class AppCoordinator: NSObject, EventReciever {
     }
     
     static func removeEventNotifications(event: Event) {
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [event.eventIdentifier.uuidString])
-        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [event.eventIdentifier.uuidString])
+        let identifiers : [String] = [event.eventIdentifier.uuidString, "\(event.eventIdentifier.uuidString)\(event.offset)"]
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiers)
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: identifiers)
     }
     
     static func openAppleMaps(event: Event) {

@@ -88,6 +88,8 @@ class EventSummaryCellTableViewCell: UITableViewCell {
             driveTimeLabel.backgroundColor = .red
         } else if (timeUntilDeparture < 600) {
             driveTimeLabel.backgroundColor = .yellow
+        } else {
+            driveTimeLabel.backgroundColor = .green
         }
         driveTimeLabel.text = "\(event!.driveTime!/60) min\n\(timeToLeave)"
         self.driveTimeLabel.isHidden = false

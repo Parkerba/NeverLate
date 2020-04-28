@@ -21,11 +21,13 @@ struct Event: Codable {
     var locationLatitude: Double?
     var locationLongitude: Double?
     var locationName: String?
+    
     var driveTime: Int?
     var departureTime: Date?
     var eventDate: Date
     var eventDescription: String
     var eventIdentifier: UUID
+    var offset: Int = 0
     
     // initializer taking a date param
     init (datePicked: Date, eventName: String, eventLocation: MKPlacemark?, EventDescription: String ) {
@@ -63,6 +65,9 @@ struct Event: Codable {
     
     func deleteEvent() {
         EventManager.delete(eventIdentifier.uuidString)
+    }
+    mutating func setOffset(offset: Int) {
+        self.offset = offset
     }
     
     mutating func setDriveTime(driveTime: Int) {

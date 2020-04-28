@@ -132,55 +132,21 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
     
     let reminderTimePickerLabel : UILabel = {
         let label = UILabel()
-        label.text = "ALERT: "
+        label.text = "ALERT ME BEFORE I NEED TO LEAVE: "
         label.font = UIFont(name: "Copperplate-Bold", size: 20)!
         label.backgroundColor = .clear
+        label.adjustsFontSizeToFitWidth = true
+        label.numberOfLines = 1
         
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
-    let reminderTimePicker : UIStackView =  {
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.spacing = -20
-        stack.distribution = .fillEqually
-        
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        return stack
-    }()
-    
-    let hourButton : UIButton = {
-        let button = UIButton()
-        button.setTitle("1 hour", for: .normal)
-        button.backgroundColor = .lightGray
-        button.addTarget(self, action: #selector(notificationModifierPressed), for: .touchUpInside)
-        button.layer.cornerRadius = 10
-        
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
-    
-    let halfHourButton : UIButton = {
-        let button = UIButton()
-        button.setTitle("30 min", for: .normal)
-        button.backgroundColor = .lightGray
-        button.addTarget(self, action: #selector(notificationModifierPressed), for: .touchUpInside)
-        button.layer.cornerRadius = 10
-        
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
-    
-    let quarterHourButton : UIButton = {
-        let button = UIButton()
-        button.setTitle("15 min", for: .normal)
-        button.backgroundColor = .lightGray
-        button.addTarget(self, action: #selector(notificationModifierPressed), for: .touchUpInside)
-        button.layer.cornerRadius = 10
-        
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
+    let reminderView : ReminderOffsetSelector = {
+        let reminderView = ReminderOffsetSelector()
+        reminderView.translatesAutoresizingMaskIntoConstraints = false
+        reminderView.setUp()
+        return reminderView
     }()
     
     
@@ -206,7 +172,7 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
         view.addSubview(eventDescriptionTextField)
         view.addSubview(addLocationButton)
         view.addSubview(reminderTimePickerLabel)
-        view.addSubview(reminderTimePicker)
+        view.addSubview(reminderView)
     }
     
     private func setDelegates() {
@@ -250,15 +216,12 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
         eventDescriptionTextField.widthAnchor.constraint(equalToConstant: datePicker.frame.width).isActive = true
         
         reminderTimePickerLabel.leadingAnchor.constraint(equalTo: datePicker.leadingAnchor).isActive = true
+        reminderTimePickerLabel.trailingAnchor.constraint(equalTo: datePicker.trailingAnchor).isActive = true
         reminderTimePickerLabel.topAnchor.constraint(equalTo: datePicker.bottomAnchor, constant: 10).isActive = true
         
-        
-        reminderTimePicker.leadingAnchor.constraint(equalTo: datePicker.leadingAnchor).isActive = true
-        reminderTimePicker.trailingAnchor.constraint(equalTo: datePicker.trailingAnchor).isActive = true
-        reminderTimePicker.topAnchor.constraint(equalTo: reminderTimePickerLabel.bottomAnchor).isActive = true
-        reminderTimePicker.addArrangedSubview(hourButton)
-        reminderTimePicker.addArrangedSubview(halfHourButton)
-        reminderTimePicker.addArrangedSubview(quarterHourButton)
+        reminderView.leadingAnchor.constraint(equalTo: datePicker.leadingAnchor).isActive = true
+        reminderView.trailingAnchor.constraint(equalTo: datePicker.trailingAnchor).isActive = true
+        reminderView.topAnchor.constraint(equalTo: reminderTimePickerLabel.bottomAnchor, constant: 50).isActive = true        
         
         doneButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         doneButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -view.frame.height/20).isActive = true
@@ -273,7 +236,8 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
     // MARK: Actions --------------------------------------------------------------------------------
     // Sends the new event to the entryPoint
     @objc private func onDoneButton() {
-        let newEvent = Event(datePicked: datePicker.date, eventName: eventTitleTextField.text ?? "", eventLocation: destinationLocation, currentLocation: startingLocation, EventDescription : eventDescriptionTextField.text ?? "")
+        var newEvent = Event(datePicked: datePicker.date, eventName: eventTitleTextField.text ?? "", eventLocation: destinationLocation, currentLocation: startingLocation, EventDescription : eventDescriptionTextField.text ?? "")
+        newEvent.offset = Int(reminderView.value.rounded())
         delegate?.createEvent(event: newEvent)
         self.navigationController?.popViewController(animated: true)
     }
