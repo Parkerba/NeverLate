@@ -21,7 +21,7 @@ The key should be inserted as a String that is being assigned to the variable ti
 - - A local notification containing the event information and options to open in maps are scheduled to be delivered when you need to leave to arrive at the specified event arrival time.
 
 - The new event is displayed to the user in the entry view controllers table view (list).
-- Each created event represents a cell in the table view:
+- Each Cell in the first ViewController's (Screen's) UITableView represents a scheduled event.
 - You can interact with each cell in the following ways:
 - - swipe right to open the location in apple maps
 - - swipe left to delete the event and cancel the scheduled notification
