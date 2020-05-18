@@ -279,38 +279,50 @@ extension MapView: UISearchBarDelegate {
         print ("editing")
     }
     
+    func isResponseInvalid() -> Bool {
+        if (response == nil || response!.count == 0) {
+            return true
+        }
+        return false
+    }
+    
+    func presentInvalidResponseMessage() {
+        let invalidAddress = UIAlertController(title: "Invalid Location", message: "The location you searched for cannot be found, please try again.", preferredStyle: .alert)
+        invalidAddress.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
+        self.present(invalidAddress, animated: true, completion: nil)
+    }
+    
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         view.endEditing(true)
-        if (response == nil || response!.count == 0) {
-            let invalidAddress = UIAlertController(title: "Invalid Location", message: "The location you searched for cannot be found, please try again.", preferredStyle: .alert)
-            invalidAddress.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
-            self.present(invalidAddress, animated: true, completion: nil)
+        
+        if isResponseInvalid() {
+            presentInvalidResponseMessage()
         }
-            
-            
         else {
             let searchRequest = MKLocalSearch.Request()
             searchRequest.naturalLanguageQuery = searchBar.text ?? ""
             searchRequest.region = searchCompleter.region
             let search = MKLocalSearch(request: searchRequest)
             #warning("Usage of unowned may not be safe")
-            search.start { [unowned self] response, error in
-                guard let response = response else {
+            search.start { [weak self] response, error in
+                if let self = self {
+                    guard let response = response else {
+                        self.map.removeAnnotations(self.map.annotations)
+                        self.searchSuggestion.isHidden = true
+                        return
+                    }
+                    if (searchBar === self.startingLocationSearchBar) {
+                        self.startingLocation = response.mapItems[0].placemark.coordinate
+                    }
                     self.map.removeAnnotations(self.map.annotations)
+                    for item in response.mapItems {
+                        let annotation = MapViewAnnotation(title: "\(item.name ?? ""), \(item.placemark.locality ?? "")", subtitle: item.placemark.title ?? "", coordinate: item.placemark.coordinate, placemark: item.placemark)
+                        self.map.addAnnotation(annotation)
+                    }
+                    self.map.showAnnotations(self.map.annotations, animated: true)
+                    self.centerViewOnPlaceMarker(placeMarker: response.mapItems[0].placemark)
                     self.searchSuggestion.isHidden = true
-                    return
                 }
-                if (searchBar === self.startingLocationSearchBar) {
-                    self.startingLocation = response.mapItems[0].placemark.coordinate
-                }
-                self.map.removeAnnotations(self.map.annotations)
-                for item in response.mapItems {
-                    let annotation = MapViewAnnotation(title: "\(item.name ?? ""), \(item.placemark.locality ?? "")", subtitle: item.placemark.title ?? "", coordinate: item.placemark.coordinate, placemark: item.placemark)
-                    self.map.addAnnotation(annotation)
-                }
-                self.map.showAnnotations(self.map.annotations, animated: true)
-                self.centerViewOnPlaceMarker(placeMarker: response.mapItems[0].placemark)
-                self.searchSuggestion.isHidden = true
             }
         }
     }

@@ -46,7 +46,7 @@ final class AppCoordinator: NSObject, EventReciever {
     }
     
     func reloadEvents() {
-        rootViewController.events = EventManager.loadAll(type: Event.self).sorted(by: { $0.eventDate < $1.eventDate})
+        rootViewController.events = EventManager.loadAll(type: Event.self).sorted(by: { $0.date < $1.date})
         rootViewController.eventTable.reloadData()
     }
     
@@ -136,7 +136,7 @@ final class AppCoordinator: NSObject, EventReciever {
         UNUserNotificationCenter.current().setNotificationCategories([category])
         
         
-        let mainDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: event.departureTime ?? event.eventDate)
+        let mainDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: event.departureTime ?? event.date)
         
         let trigger = UNCalendarNotificationTrigger(dateMatching: mainDate, repeats: false)
         
@@ -145,7 +145,7 @@ final class AppCoordinator: NSObject, EventReciever {
         if let offsetContent = content.offSetNotificationContent {
             // submit Notification for offset notification
             let offsetInSeconds = event.offset*60
-            let offsetDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: (event.departureTime ?? event.eventDate) - Double(offsetInSeconds))
+            let offsetDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: (event.departureTime ?? event.date) - Double(offsetInSeconds))
             
             let offsetNotificationTrigger = UNCalendarNotificationTrigger(dateMatching: offsetDate, repeats: false)
             
@@ -215,22 +215,11 @@ final class AppCoordinator: NSObject, EventReciever {
     }
     
     static func openAppleMaps(event: Event) {
-        guard let lat = event.locationLatitude else {
-            return
-        }
+        guard let coordinate = event.destinationPosition?.CLCoordinate() else {return}
         
-        guard let long = event.locationLongitude else {
-            return
-        }
-        
-        guard let name = event.locationName else {
-            return
-        }
-        
-        let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: long)
         let placemark = MKPlacemark(coordinate: coordinate)
         let mapItem = MKMapItem(placemark: placemark)
-        mapItem.name = name
+        mapItem.name = event.locationName ?? ""
         mapItem.openInMaps(launchOptions: [:])
     }
 }

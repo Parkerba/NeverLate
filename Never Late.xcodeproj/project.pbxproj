@@ -12,6 +12,8 @@
 		A60348E922DF978000AE932F /* Never_Late.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = A60348E722DF978000AE932F /* Never_Late.xcdatamodeld */; };
 		A60348EB22DF978100AE932F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A60348EA22DF978100AE932F /* Assets.xcassets */; };
 		A60348FC22E0001A00AE932F /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60348FB22E0001A00AE932F /* Event.swift */; };
+		A60A7A4D2471EAA600A73C3A /* Coordinate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60A7A4C2471EAA600A73C3A /* Coordinate.swift */; };
+		A60A7A4F2473433200A73C3A /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60A7A4E2473433200A73C3A /* Constants.swift */; };
 		A61C16E324429E370074BCF2 /* ReminderOffsetSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61C16E224429E370074BCF2 /* ReminderOffsetSelector.swift */; };
 		A62DC6A92326F7F7008C78F6 /* EventManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62DC6A82326F7F7008C78F6 /* EventManager.swift */; };
 		A62DC6AC23286A5C008C78F6 /* AddNewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62DC6AB23286A5C008C78F6 /* AddNewViewController.swift */; };
@@ -33,6 +35,8 @@
 		A60348EA22DF978100AE932F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A60348EF22DF978100AE932F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A60348FB22E0001A00AE932F /* Event.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
+		A60A7A4C2471EAA600A73C3A /* Coordinate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coordinate.swift; sourceTree = "<group>"; };
+		A60A7A4E2473433200A73C3A /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		A61C16E224429E370074BCF2 /* ReminderOffsetSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderOffsetSelector.swift; sourceTree = "<group>"; };
 		A62DC6A82326F7F7008C78F6 /* EventManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventManager.swift; sourceTree = "<group>"; };
 		A62DC6AB23286A5C008C78F6 /* AddNewViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddNewViewController.swift; sourceTree = "<group>"; };
@@ -87,6 +91,7 @@
 				A60348EA22DF978100AE932F /* Assets.xcassets */,
 				A60348EF22DF978100AE932F /* Info.plist */,
 				A60348E722DF978000AE932F /* Never_Late.xcdatamodeld */,
+				A60A7A4E2473433200A73C3A /* Constants.swift */,
 			);
 			path = "Never Late";
 			sourceTree = "<group>";
@@ -106,6 +111,7 @@
 			children = (
 				A62DC6A82326F7F7008C78F6 /* EventManager.swift */,
 				A60348FB22E0001A00AE932F /* Event.swift */,
+				A60A7A4C2471EAA600A73C3A /* Coordinate.swift */,
 				A64B86342457C2EF0027C4CC /* EventNotificationContent.swift */,
 				A634D7202332CAEC000AB922 /* EventSummaryCellTableViewCell.swift */,
 			);
@@ -230,6 +236,7 @@
 				A60348E922DF978000AE932F /* Never_Late.xcdatamodeld in Sources */,
 				A62DC6A92326F7F7008C78F6 /* EventManager.swift in Sources */,
 				A6C3A217238A6FCD000220A7 /* DetailView.swift in Sources */,
+				A60A7A4F2473433200A73C3A /* Constants.swift in Sources */,
 				A61C16E324429E370074BCF2 /* ReminderOffsetSelector.swift in Sources */,
 				A60348E322DF978000AE932F /* NeverLateEntryViewController.swift in Sources */,
 				A6A689F522F75876004D227F /* AppCoordinator.swift in Sources */,
@@ -237,6 +244,7 @@
 				A60348E122DF978000AE932F /* AppDelegate.swift in Sources */,
 				A63C1E562427FF70009689E9 /* MapViewAnnotation.swift in Sources */,
 				A60348FC22E0001A00AE932F /* Event.swift in Sources */,
+				A60A7A4D2471EAA600A73C3A /* Coordinate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

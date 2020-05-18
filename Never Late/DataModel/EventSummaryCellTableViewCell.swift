@@ -68,7 +68,7 @@ class EventSummaryCellTableViewCell: UITableViewCell {
         let eventLocationName : String = (event!.locationName == nil) ? "" : "\(event!.locationName!)\n"
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM d, @ h:mm a"
-        let formattedDateString = formatter.string(from: event!.eventDate)
+        let formattedDateString = formatter.string(from: event!.date)
         mainTitleLabel.text = "\(eventTitle)\(eventLocationName)\(formattedDateString)"
         mainTitleLabel.font = UIFont(name: "Arial", size: 20)
         if (event?.driveTime) != nil {

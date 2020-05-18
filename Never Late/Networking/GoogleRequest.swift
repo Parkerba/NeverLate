@@ -24,29 +24,29 @@ final class GoogleRequest {
     
     static private let basePath = "https://maps.googleapis.com/maps/api/distancematrix/json?origins="
     
+    static private let distanceMatrixAPIKey = "YourAPIKey"
+    
     // returns the completed URL path to be requested
     static public func getDriveTimeUrl(event: Event) -> URL? {
+        if eventContainsNilLocations(event: event) {return nil}
         
-        guard let currentLatitude = event.currentLatitude
-            else {return nil}
-        guard let currentLongitude = event.currentLongitude
-            else {return nil}
+        let departureTimeInSeconds : Int = Int(event.departureTime?.timeIntervalSince1970 ?? event.date.timeIntervalSince1970)
         
-        guard let destLatitudeComponent = event.locationLatitude
-            else {return nil}
-        guard let destLongitudeComponent = event.locationLongitude
-            else {return nil}
-        
-        let departureTimeInSeconds : Int = Int(event.departureTime?.timeIntervalSince1970 ?? event.eventDate.timeIntervalSince1970)
-        let apiKey = "YourApiKey"
-        
-        let returnUrl: String = "\(basePath)\(currentLatitude),\(currentLongitude)&destinations=\(destLatitudeComponent),\(destLongitudeComponent)&departure_time=\(departureTimeInSeconds)&traffic_model=best_guess&key=\(apiKey)"
+        let returnUrl: String = "\(basePath)\(event.startingPosition!.latitude),\(event.startingPosition!.longitude)&destinations=\(event.destinationPosition!.latitude),\(event.destinationPosition!.longitude)&departure_time=\(departureTimeInSeconds)&traffic_model=best_guess&key=\(distanceMatrixAPIKey)"
         return URL(string: returnUrl)
+    }
+    
+    // Checks for nil location values in event param
+    static public func eventContainsNilLocations(event: Event) -> Bool {
+        guard let _ = event.startingPosition, let _ = event.destinationPosition else {
+            return true
+        }
+        return false
     }
     
     // Preforms the URLSession request.
     // Recursive function, makes api calls until the the accuracy is sufficient,
-    // or until number of api calls reach 5.
+    // or until number of api calls reach the specified max in the constants file.
     static func performRequest(url: URL?, event: Event) {
         guard let url = url else {return}
         var event = event
@@ -58,7 +58,7 @@ final class GoogleRequest {
                     GoogleRequest.apiCalls += 1
                     event.setDriveTime(driveTime: driveTimeData.driveTimeInTraffic)
                     if (event.departureTime == nil) {
-                        event.setDepartureTime(departureTime: event.eventDate)
+                        event.setDepartureTime(departureTime: event.date)
                     }
                     guard let accuracy = getAccuracy(event: event) else {
                         return
@@ -72,7 +72,6 @@ final class GoogleRequest {
                     let networkError = Notification.Name("networkError")
                     NotificationCenter.default.post(name: networkError, object: nil)
                 }
-                
             }
         }.resume()
     }
@@ -81,14 +80,14 @@ final class GoogleRequest {
     // returns the number of seconds that the departure time is off by, used to improve the departure time prediction for the next api call.
     static private func getAccuracy(event: Event) -> Int? {
         let estimatedArrivalInSeconds : Int = Int(event.departureTime!.timeIntervalSince1970) + event.driveTime! 
-        return estimatedArrivalInSeconds - Int(event.eventDate.timeIntervalSince1970)
+        return estimatedArrivalInSeconds - Int(event.date.timeIntervalSince1970)
     }
     
     // Determines if the departure time from the api call is accurate enough (within 5 minutes early but never late)
     static private func checkAccuracy(offBy: Int, event: Event) {
         var event = event
-        if (offBy > 300 || offBy < 0) && apiCalls <= 5 {
-            event.setDepartureTime(departureTime: event.departureTime?.addingTimeInterval(-Double(offBy)) ?? event.eventDate.addingTimeInterval(Double(offBy)))
+        if (offBy > Constants.earlyArrivalToleranceInSeconds || offBy < 0) && apiCalls <= Constants.maximumAPICalls {
+            event.setDepartureTime(departureTime: event.departureTime?.addingTimeInterval(-Double(offBy)) ?? event.date.addingTimeInterval(Double(offBy)))
             let url = getDriveTimeUrl(event: event)
             performRequest(url: url, event: event)
             return

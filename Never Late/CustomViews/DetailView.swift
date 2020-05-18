@@ -256,7 +256,7 @@ class DetailView: UIView, UITextFieldDelegate {
             departureTimeLabel.text = "Departure Time: N/A"
             driveTimeLabel.text = "Drive time: N/A"
         }
-        arrivalTimeLabel.text = "Arrival Time: \(formatter.string(from: event.eventDate))"
+        arrivalTimeLabel.text = "Arrival Time: \(formatter.string(from: event.date))"
     }
     // MARK: Actions --------------------------------------------------------------------------------
     
@@ -296,9 +296,9 @@ class DetailView: UIView, UITextFieldDelegate {
         // Grabs users current location and uses this as the starting location.
         let yes = UIAlertAction(title: "Current", style: .default) { _ in
             let locationManager = CLLocationManager()
-            let currentLocation = locationManager.location?.coordinate
-            self.event.currentLatitude = currentLocation?.latitude
-            self.event.currentLongitude = currentLocation?.longitude
+            if let currentLocation = locationManager.location?.coordinate {
+                self.event.startingPosition = Coordinate(coordinate: currentLocation)
+            }
             self.parentRef?.refreshEvent?(self.event)
             self.dismiss()
         }
@@ -352,7 +352,7 @@ extension DetailView : MKMapViewDelegate {
             routeMap.setRegion(region, animated: true)
         }
         
-        if let destinationCoordinates = (event.locationLongitude != nil) ? CLLocationCoordinate2D(latitude: event.locationLatitude!, longitude: event.locationLongitude!) : nil {
+        if let destinationCoordinates = event.destinationPosition?.CLCoordinate() {
             let annotation = MKPointAnnotation()
             annotation.coordinate = destinationCoordinates
             annotation.title = event.locationName ?? ""

@@ -12,47 +12,48 @@ import CoreLocation
 import MapKit
 
 struct Event: Codable {
-    
+    // User given name
     var title: String
     
-    var currentLatitude: Double?
-    var currentLongitude: Double?
+    var startingPosition: Coordinate?
+    var destinationPosition: Coordinate?
     
-    var locationLatitude: Double?
-    var locationLongitude: Double?
     var locationName: String?
     
     var driveTime: Int?
     var departureTime: Date?
-    var eventDate: Date
+    var date: Date
     var eventDescription: String
     var eventIdentifier: UUID
     var offset: Int = 0
     
     // initializer taking a date param
     init (datePicked: Date, eventName: String, eventLocation: MKPlacemark?, EventDescription: String ) {
-        eventDate = datePicked
+        date = datePicked
         locationName = eventLocation?.name
         title = eventName
         eventDescription = EventDescription
         
-        locationLatitude = eventLocation?.coordinate.latitude
-        locationLongitude = eventLocation?.coordinate.longitude
+        if let eventLocation = eventLocation {
+            destinationPosition = Coordinate(coordinate: eventLocation.coordinate)
+        }
         
         eventIdentifier = UUID()
     }
     
     init (datePicked: Date, eventName: String, eventLocation: MKPlacemark?, currentLocation: CLLocationCoordinate2D?, EventDescription: String ) {
-        eventDate = datePicked
+        date = datePicked
         locationName = eventLocation?.name
         title = eventName
         eventDescription = EventDescription
         
-        currentLatitude = currentLocation?.latitude
-        currentLongitude = currentLocation?.longitude
+        if let eventLocation = eventLocation {
+            destinationPosition = Coordinate(coordinate: eventLocation.coordinate)
+        }
         
-        locationLatitude = eventLocation?.coordinate.latitude
-        locationLongitude = eventLocation?.coordinate.longitude
+        if let currentLocation = currentLocation {
+            startingPosition = Coordinate(coordinate: currentLocation)
+        }
         
         eventIdentifier = UUID()
     }

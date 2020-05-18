@@ -255,13 +255,4 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
     @objc func onAddLocationButton() {
         displayMap()
     }
-    
-    #warning("implement real logic")
-    @objc func notificationModifierPressed(sender: UIButton) {
-        if (sender.backgroundColor == #colorLiteral(red: 0.7450980392, green: 0.7058823529, blue: 0.5647058824, alpha: 1)) {
-            sender.backgroundColor = .lightGray
-        } else {
-            sender.backgroundColor = #colorLiteral(red: 0.7450980392, green: 0.7058823529, blue: 0.5647058824, alpha: 1)
-        }
-    }
 }
