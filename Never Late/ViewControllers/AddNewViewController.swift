@@ -34,9 +34,9 @@ class AddNewViewController: UIViewController, UITextFieldDelegate {
     var displayMap : (() -> Void)!
     
     // colors used
-    let mainBackgroundColor = #colorLiteral(red: 0.9411764706, green: 0.9725490196, blue: 0.9960784314, alpha: 1)
+    let mainBackgroundColor = Constants.backGroundColor
     
-    let buttonColor = #colorLiteral(red: 0.7450980392, green: 0.7058823529, blue: 0.5647058824, alpha: 1) //BEB490 other complementary colors: E3DCC1,FFFBEE,746943
+    let buttonColor = Constants.secondaryColor //BEB490 other complementary colors: E3DCC1,FFFBEE,746943
     
     // UILabel at the top of the view
     let neverLateLabel : UILabel = {

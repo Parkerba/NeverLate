@@ -323,7 +323,7 @@ class DetailView: UIView, UITextFieldDelegate {
     
     @objc func textFieldValuesChanged() {
         if textChanged() {
-            saveButton.backgroundColor = #colorLiteral(red: 1, green: 0.9752991796, blue: 0, alpha: 0.3498501712)
+            saveButton.backgroundColor = Constants.highLightColor
         }
     }
     

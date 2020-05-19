@@ -21,7 +21,7 @@
 		A63C1E562427FF70009689E9 /* MapViewAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63C1E552427FF70009689E9 /* MapViewAnnotation.swift */; };
 		A64B86352457C2EF0027C4CC /* EventNotificationContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A64B86342457C2EF0027C4CC /* EventNotificationContent.swift */; };
 		A68B1EE22328A94900DFF9E0 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A68B1EE12328A94900DFF9E0 /* MapKit.framework */; };
-		A68E607322F61069003ADB6F /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68E607222F61069003ADB6F /* MapView.swift */; };
+		A68E607322F61069003ADB6F /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68E607222F61069003ADB6F /* MapViewController.swift */; };
 		A6A689F522F75876004D227F /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A689F422F75876004D227F /* AppCoordinator.swift */; };
 		A6C3A217238A6FCD000220A7 /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C3A216238A6FCD000220A7 /* DetailView.swift */; };
 		A6E9C57F232AE373007C3871 /* GoogleRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E9C57E232AE373007C3871 /* GoogleRequest.swift */; };
@@ -44,7 +44,7 @@
 		A63C1E552427FF70009689E9 /* MapViewAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewAnnotation.swift; sourceTree = "<group>"; };
 		A64B86342457C2EF0027C4CC /* EventNotificationContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventNotificationContent.swift; sourceTree = "<group>"; };
 		A68B1EE12328A94900DFF9E0 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
-		A68E607222F61069003ADB6F /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
+		A68E607222F61069003ADB6F /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		A6A689F422F75876004D227F /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
 		A6C3A216238A6FCD000220A7 /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
 		A6E9C57E232AE373007C3871 /* GoogleRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleRequest.swift; sourceTree = "<group>"; };
@@ -123,7 +123,7 @@
 			children = (
 				A60348E222DF978000AE932F /* NeverLateEntryViewController.swift */,
 				A62DC6AB23286A5C008C78F6 /* AddNewViewController.swift */,
-				A68E607222F61069003ADB6F /* MapView.swift */,
+				A68E607222F61069003ADB6F /* MapViewController.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -229,7 +229,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A68E607322F61069003ADB6F /* MapView.swift in Sources */,
+				A68E607322F61069003ADB6F /* MapViewController.swift in Sources */,
 				A64B86352457C2EF0027C4CC /* EventNotificationContent.swift in Sources */,
 				A634D7212332CAEC000AB922 /* EventSummaryCellTableViewCell.swift in Sources */,
 				A62DC6AC23286A5C008C78F6 /* AddNewViewController.swift in Sources */,

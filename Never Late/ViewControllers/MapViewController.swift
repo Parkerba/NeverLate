@@ -10,7 +10,7 @@ import Foundation
 import MapKit
 import CoreLocation
 
-class MapView: UIViewController {
+class MapViewController: UIViewController {
     
     deinit {
         print("Memory was released in mapkit. No retain cycles")
@@ -48,7 +48,7 @@ class MapView: UIViewController {
     
     let startingLocationToggle: UISwitch = {
         let toggle = UISwitch()
-        toggle.onTintColor = #colorLiteral(red: 0.7450980392, green: 0.7058823529, blue: 0.5647058824, alpha: 1)
+        toggle.onTintColor = Constants.secondaryColor
         toggle.setOn(true, animated: true)
         toggle.addTarget(self, action: #selector(changeStartingLocation), for: .valueChanged)
         
@@ -87,7 +87,7 @@ class MapView: UIViewController {
         backButton.setTitle("Back", for: .normal)
         backButton.titleLabel?.adjustsFontSizeToFitWidth = true
         backButton.layer.cornerRadius = 10
-        backButton.backgroundColor = #colorLiteral(red: 0.7450980392, green: 0.7058823529, blue: 0.5647058824, alpha: 1) // BEB490
+        backButton.backgroundColor = Constants.secondaryColor
         backButton.addTarget(self, action: #selector(onBackButton), for: .touchUpInside)
         
         backButton.translatesAutoresizingMaskIntoConstraints = false
@@ -103,7 +103,7 @@ class MapView: UIViewController {
         searchResults.layer.opacity = 0.8
         searchResults.layer.cornerRadius = 5
         searchResults.backgroundColor = .clear
-        searchResults.register(UITableViewCell.self, forCellReuseIdentifier: "searchSuggestion")
+        searchResults.register(UITableViewCell.self, forCellReuseIdentifier: Constants.mapVCCellIdentifier)
         
         searchResults.translatesAutoresizingMaskIntoConstraints = false
         return searchResults
@@ -130,7 +130,7 @@ class MapView: UIViewController {
         button.titleLabel?.font = UIFont(name: "Copperplate-Bold", size: 25)!
         button.layer.cornerRadius = 15
         button.addTarget(self, action: #selector(onDoneButton), for: .touchUpInside)
-        button.backgroundColor = #colorLiteral(red: 0.7450980392, green: 0.7058823529, blue: 0.5647058824, alpha: 1)
+        button.backgroundColor = Constants.secondaryColor
         button.isHidden = true
         
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -243,16 +243,20 @@ class MapView: UIViewController {
         }
     }
     
+    private func presentDestinationNotSetMessage() {
+        let invalidAddress = UIAlertController(title: "Destination Location Not Set", message: "Set a destination to include a location in your event.", preferredStyle: .alert)
+        invalidAddress.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
+        self.present(invalidAddress, animated: true, completion: nil)
+        return
+    }
+    
     @objc private func onDoneButton() {
         guard let sendEvent = sendEvent else {
             self.navigationController?.popViewController(animated: true)
             return
         }
         guard let destinationLocation = destinationLocation else {
-            let invalidAddress = UIAlertController(title: "Destination Location Not Set", message: "Set a destination to include a location in your event.", preferredStyle: .alert)
-            invalidAddress.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
-            self.present(invalidAddress, animated: true, completion: nil)
-            return
+            return presentDestinationNotSetMessage()
         }
         sendEvent(destinationLocation, startingLocation ?? locationManager.location?.coordinate)
         locationManager.stopUpdatingLocation()
@@ -274,7 +278,7 @@ class MapView: UIViewController {
     }
 }
 // MARK: Search Bar delegate methods --------------------------------------------------------------------------------
-extension MapView: UISearchBarDelegate {
+extension MapViewController: UISearchBarDelegate {
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         print ("editing")
     }
@@ -303,7 +307,6 @@ extension MapView: UISearchBarDelegate {
             searchRequest.naturalLanguageQuery = searchBar.text ?? ""
             searchRequest.region = searchCompleter.region
             let search = MKLocalSearch(request: searchRequest)
-            #warning("Usage of unowned may not be safe")
             search.start { [weak self] response, error in
                 if let self = self {
                     guard let response = response else {
@@ -354,7 +357,7 @@ extension MapView: UISearchBarDelegate {
 }
 
 // MARK: Location handling --------------------------------------------------------------------------------
-extension MapView: CLLocationManagerDelegate {
+extension MapViewController: CLLocationManagerDelegate {
     func setUpLocationManager() {
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
@@ -405,13 +408,13 @@ extension MapView: CLLocationManagerDelegate {
 }
 
 // MARK: Search completion --------------------------------------------------------------------------------
-extension MapView: MKLocalSearchCompleterDelegate {
+extension MapViewController: MKLocalSearchCompleterDelegate {
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
         results = completer.results
     }
 }
 
-extension MapView : MKMapViewDelegate {
+extension MapViewController : MKMapViewDelegate {
     private func showMaproute() {
         let directionRequest = MKDirections.Request()
         let locationManager = CLLocationManager()
@@ -492,7 +495,7 @@ extension MapView : MKMapViewDelegate {
      }
 }
 // MARK: Table View --------------------------------------------------------------------------------
-extension MapView: UITableViewDelegate, UITableViewDataSource {
+extension MapViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let size = response?.count ?? 0
@@ -500,7 +503,7 @@ extension MapView: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "searchSuggestion", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: Constants.mapVCCellIdentifier, for: indexPath)
         cell.backgroundColor = (self.traitCollection.userInterfaceStyle == .dark) ? .black:.white
         cell.textLabel?.numberOfLines = 2
         if (indexPath.row < response?.count ?? 0) {

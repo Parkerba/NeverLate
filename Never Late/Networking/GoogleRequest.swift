@@ -54,7 +54,6 @@ final class GoogleRequest {
         session.dataTask(with: url) { (data, response, error) in
             if let data = data {
                 if let driveTimeData = parseJson(json: data) {
-                    print(GoogleRequest.apiCalls)
                     GoogleRequest.apiCalls += 1
                     event.setDriveTime(driveTime: driveTimeData.driveTimeInTraffic)
                     if (event.departureTime == nil) {
@@ -69,7 +68,7 @@ final class GoogleRequest {
             } else {
                 // There has been a network error, notify the user.
                 DispatchQueue.main.async {
-                    let networkError = Notification.Name("networkError")
+                    let networkError = Notification.Name(Constants.networkErrorNotificationIdentifier)
                     NotificationCenter.default.post(name: networkError, object: nil)
                 }
             }
@@ -86,7 +85,7 @@ final class GoogleRequest {
     // Determines if the departure time from the api call is accurate enough (within 5 minutes early but never late)
     static private func checkAccuracy(offBy: Int, event: Event) {
         var event = event
-        if (offBy > Constants.earlyArrivalToleranceInSeconds || offBy < 0) && apiCalls <= Constants.maximumAPICalls {
+        if (offBy > Constants.maximumArrivalTimeToleranceInSeconds || offBy < 0) && apiCalls <= Constants.maximumAPICalls {
             event.setDepartureTime(departureTime: event.departureTime?.addingTimeInterval(-Double(offBy)) ?? event.date.addingTimeInterval(Double(offBy)))
             let url = getDriveTimeUrl(event: event)
             performRequest(url: url, event: event)
@@ -95,22 +94,30 @@ final class GoogleRequest {
         finalizeEvent(event: event)
     }
     
-    // Called when the accuracy is determined to be sufficient or api calls exceed 5
+    // Called when the accuracy is determined to be sufficient or api calls exceed the specified maximum defined in Constants
     static private func finalizeEvent(event: Event) {
-        print("Finished request with after performing \(apiCalls) api calls")
         apiCalls = 0
         AppCoordinator.saveEvent(event: event)
         AppCoordinator.addNotification(event: event)
-        sendDriveTimeNotification()
+        sendReloadEventTableNotification()
     }
     
     // Sends out a notification to reload the eventTable of the entryViewController
-    static private func sendDriveTimeNotification() {
-        let name = Notification.Name(rawValue: "reloadEvents")
+    static private func sendReloadEventTableNotification() {
+        let name = Notification.Name(rawValue: Constants.reloadEventsNotificationIdenifier)
         NotificationCenter.default.post(name: name, object: nil)
     }
     
     // This parses the json returned from the google distance matrix api call
+    private static func presentInvalidRequestMessage() -> googleData? {
+        // Invalid request notify the user
+        DispatchQueue.main.async {
+            let invalidRequest = Notification.Name(Constants.invalidRequestNotificationIdentifier)
+            NotificationCenter.default.post(name: invalidRequest, object: nil)
+        }
+        return nil
+    }
+    
     static private func parseJson (json: Data?) -> googleData? {
         guard let jsonData = json else {
             return nil
@@ -122,12 +129,7 @@ final class GoogleRequest {
                 if let rows =  jsonObject["rows"] as? Array<Dictionary<String, Any>> {
                     
                     if (rows.count == 0) {
-                        // Invalid request notify the user
-                        DispatchQueue.main.async {
-                            let invalidRequest = Notification.Name("invalidRequest")
-                            NotificationCenter.default.post(name: invalidRequest, object: nil)
-                        }
-                        return nil
+                        return presentInvalidRequestMessage()
                     }
                     
                     let dictObject = rows[0]

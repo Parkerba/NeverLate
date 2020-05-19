@@ -26,10 +26,7 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
     weak var detailViewReference : DetailView?
     
     // MARK: Properties --------------------------------------------------------------------------------
-    let buttonColor = #colorLiteral(red: 0.7802982234, green: 0.7802982234, blue: 0.7802982234, alpha: 0.7533711473) //hex: BEB490
-    
-    let mainBackgroundColor = #colorLiteral(red: 0.9338286519, green: 0.9739060998, blue: 0.9988136888, alpha: 1) //hex: F0F8FE
-    
+        
     // Top label denoting the name of the app
     let neverLateLabel : UILabel = {
         let label : UILabel = UILabel()
@@ -67,7 +64,7 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
         let tableView = UITableView()
         tableView.allowsSelection = true
         tableView.backgroundColor = .clear
-        tableView.register(EventSummaryCellTableViewCell.self, forCellReuseIdentifier: "eventCell")
+        tableView.register(EventSummaryCellTableViewCell.self, forCellReuseIdentifier: Constants.entryVCCellIdentifier)
         tableView.rowHeight = 90
         
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -87,10 +84,7 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
     // MARK: LifeCycle --------------------------------------------------------------------------------
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = mainBackgroundColor
-        if (traitCollection.userInterfaceStyle == .dark) {
-            view.backgroundColor = .black
-        }
+        view.backgroundColor = Constants.backGroundColor
         addSubviews()
         updateEventTable()
         setUpUI()
@@ -119,7 +113,7 @@ class NeverLateEntryViewController: UIViewController, UNUserNotificationCenterDe
         addButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: view.frame.width/10).isActive = true
         addButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -view.frame.width/10).isActive = true
         addButton.heightAnchor.constraint(equalToConstant: view.frame.height/7).isActive = true
-        addButton.backgroundColor = buttonColor
+        addButton.backgroundColor = Constants.accentColor
         
         eventTableLabel.topAnchor.constraint(equalTo: addButton.bottomAnchor, constant: 10).isActive = true
         eventTableLabel.leadingAnchor.constraint(equalTo: eventTable.leadingAnchor).isActive = true
@@ -189,20 +183,20 @@ extension NeverLateEntryViewController {
     }
     
     func addNotificationObservers() {
-        let reloadevents = Notification.Name(rawValue: "reloadEvents")
+        let reloadevents = Notification.Name(rawValue: Constants.reloadEventsNotificationIdenifier)
         NotificationCenter.default.addObserver(self, selector: #selector(reloadTableData), name: reloadevents, object: nil)
         
-        let invalidRequest = Notification.Name(rawValue: "invalidRequest")
+        let invalidRequest = Notification.Name(rawValue: Constants.invalidRequestNotificationIdentifier)
         NotificationCenter.default.addObserver(self, selector: #selector(invalidRequestPresentError), name: invalidRequest, object: nil)
         
-        let networkError = Notification.Name(rawValue: "networkError")
+        let networkError = Notification.Name(rawValue: Constants.networkErrorNotificationIdentifier)
         NotificationCenter.default.addObserver(self, selector: #selector(networkErrorPresentError), name: networkError, object: nil)
     }
     
     func removeNotificationObservers() {
-        NotificationCenter.default.removeObserver(self, name: Notification.Name("reloadEvents"), object: nil)
-        NotificationCenter.default.removeObserver(self, name: Notification.Name("invalidRequest"), object: nil)
-        NotificationCenter.default.removeObserver(self, name: Notification.Name("networkError"), object: nil)
+        NotificationCenter.default.removeObserver(self, name: Notification.Name(Constants.reloadEventsNotificationIdenifier), object: nil)
+        NotificationCenter.default.removeObserver(self, name: Notification.Name(Constants.invalidRequestNotificationIdentifier), object: nil)
+        NotificationCenter.default.removeObserver(self, name: Notification.Name(Constants.networkErrorNotificationIdentifier), object: nil)
     }
 }
 
@@ -213,7 +207,7 @@ extension NeverLateEntryViewController: UITableViewDelegate, UITableViewDataSour
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "eventCell", for: indexPath) as! EventSummaryCellTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: Constants.entryVCCellIdentifier, for: indexPath) as! EventSummaryCellTableViewCell
         cell.set(passedEvent: events[indexPath.row])
         cell.selectionStyle = .blue
         return cell

@@ -82,7 +82,7 @@ final class AppCoordinator: NSObject, EventReciever {
     }
     
     func displayMapView(addNewVC: AddNewViewController) {
-        let vc = MapView()
+        let vc = MapViewController()
         vc.sendEvent = { destinationLocation, startingLocation in
             addNewVC.destinationLocation = destinationLocation
             addNewVC.addLocationButton.setTitle(destinationLocation.name, for: .normal)
