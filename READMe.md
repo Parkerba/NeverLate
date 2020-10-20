@@ -10,7 +10,7 @@ The key should be inserted as a String that is being assigned to the variable ti
 
 - NeverLate is an app to prevent you from being late!
 - Create an event by tapping the gray button in the entry view controller (first screen).
-- The event can be assigned a title, description, desired arrival time, starting location, and destination location from here.
+- The event can be assigned a title, description, desired arrival time, starting location (or just use current location), and destination location.
 - After all the desired information is included its time to save the event using the gold "Done" button.
 - On clicking the "Done" button the following happens:
 
