@@ -15,7 +15,7 @@ The key should be inserted as a String that is being assigned to the variable ti
 - On clicking the "Done" button the following happens:
 
 
-- - The event information is saved locally using the Codable protocol.
+- - The event information is saved locally using the Codable protocol and the device's filesystem.
 - - Requests to Googles distance matrix API are made.
 - - JSON data containing drive time predictions is retrieved and parsed.
 - - A local notification containing the event information and options to open in maps are scheduled to be delivered when you need to leave to arrive at the specified event arrival time.
